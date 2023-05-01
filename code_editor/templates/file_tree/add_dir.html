@@ -1,0 +1,21 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en" class="theme-dark">
+    <head>
+        <title>Compiler</title>
+        <link rel="stylesheet" href="{% static 'code_editor/style.css' %}">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta charset="UTF-8">
+    </head>
+    <body>
+        {% block content %}
+            <form action="{% url 'add_dir' dir_id %}" method="post">
+                {% csrf_token %}
+                {{ form.as_table }}
+                <div style="height: 10px;"></div>
+                <input class="input-btn" type="submit" value="Add">
+            </form>
+        {% endblock %}
+    </body>
+</html>

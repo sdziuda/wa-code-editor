@@ -1,3 +1,4 @@
+from django import forms
 from django.shortcuts import render
 from code_editor.models import Directory, File
 from django.template import loader
@@ -155,11 +156,59 @@ def add_file_choose(request):
     return render(request, 'file_tree/choose.html', context)
 
 
+class DirForm(forms.Form):
+    name = forms.CharField(label="Name", max_length=200)
+    desc = forms.CharField(label="Description (optional)", max_length=600, required=False)
+
+
 def add_dir(request, dir_id):
     next_red = request.GET.get('next', '/')
-    return HttpResponseRedirect(next_red)
+    if not request.user.is_authenticated:
+        return render(request, 'index.html')
+
+    if request.method == 'POST':
+        form = DirForm(request.POST)
+        if form.is_valid():
+            if dir_id != 0:
+                directory = Directory.objects.get(id=dir_id)
+            else:
+                directory = None
+            new_dir = Directory(name=form.cleaned_data['name'], desc=form.cleaned_data['desc'],
+                                owner=request.user, parent=directory)
+            new_dir.save()
+            return HttpResponseRedirect(next_red)
+    else:
+        form = DirForm()
+        context = {
+            'form': form,
+            'dir_id': dir_id
+        }
+        return render(request, 'file_tree/add_dir.html', context)
+
+
+class FileForm(forms.Form):
+    name = forms.CharField(label="Name", max_length=200)
+    desc = forms.CharField(label="Description (optional)", max_length=600, required=False)
+    content = forms.CharField(label="Content", max_length=2000000, widget=forms.Textarea)
 
 
 def add_file(request, dir_id):
     next_red = request.GET.get('next', '/')
-    return HttpResponseRedirect(next_red)
+    if not request.user.is_authenticated:
+        return render(request, 'index.html')
+
+    if request.method == 'POST':
+        form = FileForm(request.POST)
+        if form.is_valid():
+            directory = Directory.objects.get(id=dir_id)
+            new_file = File(name=form.cleaned_data['name'], desc=form.cleaned_data['desc'],
+                            content=form.cleaned_data['content'], owner=request.user, parent=directory)
+            new_file.save()
+            return HttpResponseRedirect(next_red)
+    else:
+        form = FileForm()
+        context = {
+            'form': form,
+            'dir_id': dir_id
+        }
+        return render(request, 'file_tree/add_file.html', context)

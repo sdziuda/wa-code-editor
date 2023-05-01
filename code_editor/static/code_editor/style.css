@@ -26,6 +26,28 @@ ul {
     margin: 0;
 }
 
+form {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-content: space-between;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+input {
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.input-btn {
+    background-color: var(--link-color);
+    border: transparent 2px solid;
+    border-radius: 5px;
+    color: var(--text-color);
+    padding: 10px;
+}
+
 .dir {
     list-style: square;
 }
