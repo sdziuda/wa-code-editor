@@ -9,15 +9,15 @@ def files_tree_maker(directories):
         subdirectories = directory.get_directories()
         for subdirectory in subdirectories:
             subfiles = get_subfiles(subdirectory)
-            yield loader.render_to_string('tree_dir.html',
+            yield loader.render_to_string('file_tree/tree_dir.html',
                                           {'file': subdirectory, 'subfiles': subfiles})
         files = directory.get_files()
         for f in files:
-            yield loader.render_to_string('tree_file.html', {'file': f})
+            yield loader.render_to_string('file_tree/tree_file.html', {'file': f})
 
     for dire in directories:
         sub = get_subfiles(dire)
-        yield loader.render_to_string('tree_dir.html', {'file': dire, 'subfiles': sub})
+        yield loader.render_to_string('file_tree/tree_dir.html', {'file': dire, 'subfiles': sub})
 
 
 def delete_files_tree_maker(directories):
@@ -25,15 +25,15 @@ def delete_files_tree_maker(directories):
         subdirectories = directory.get_directories()
         for subdirectory in subdirectories:
             subfiles = get_subfiles(subdirectory)
-            yield loader.render_to_string('tree_dir_delete.html',
+            yield loader.render_to_string('file_tree/tree_dir_delete.html',
                                           {'file': subdirectory, 'subfiles': subfiles})
         files = directory.get_files()
         for f in files:
-            yield loader.render_to_string('tree_file_delete_only.html', {'file': f})
+            yield loader.render_to_string('file_tree/tree_file_delete_only.html', {'file': f})
 
     for dire in directories:
         sub = get_subfiles(dire)
-        yield loader.render_to_string('tree_dir_delete.html', {'file': dire, 'subfiles': sub})
+        yield loader.render_to_string('file_tree/tree_dir_delete.html', {'file': dire, 'subfiles': sub})
 
 
 def add_dir_files_tree_maker(directories):
@@ -41,16 +41,16 @@ def add_dir_files_tree_maker(directories):
         subdirectories = directory.get_directories()
         for subdirectory in subdirectories:
             subfiles = get_subfiles(subdirectory)
-            yield loader.render_to_string('tree_dir_add_dir.html',
+            yield loader.render_to_string('file_tree/tree_dir_add_dir.html',
                                           {'file': subdirectory, 'subfiles': subfiles})
         files = directory.get_files()
         for f in files:
-            yield loader.render_to_string('tree_file_no_opt.html', {'file': f})
+            yield loader.render_to_string('file_tree/tree_file_no_opt.html', {'file': f})
 
-    yield loader.render_to_string('add_root.html')
+    yield loader.render_to_string('file_tree/add_root.html')
     for dire in directories:
         sub = get_subfiles(dire)
-        yield loader.render_to_string('tree_dir_add_dir.html', {'file': dire, 'subfiles': sub})
+        yield loader.render_to_string('file_tree/tree_dir_add_dir.html', {'file': dire, 'subfiles': sub})
 
 
 def add_file_files_tree_maker(directories):
@@ -58,15 +58,15 @@ def add_file_files_tree_maker(directories):
         subdirectories = directory.get_directories()
         for subdirectory in subdirectories:
             subfiles = get_subfiles(subdirectory)
-            yield loader.render_to_string('tree_dir_add_file.html',
+            yield loader.render_to_string('file_tree/tree_dir_add_file.html',
                                           {'file': subdirectory, 'subfiles': subfiles})
         files = directory.get_files()
         for f in files:
-            yield loader.render_to_string('tree_file_no_opt.html', {'file': f})
+            yield loader.render_to_string('file_tree/tree_file_no_opt.html', {'file': f})
 
     for dire in directories:
         sub = get_subfiles(dire)
-        yield loader.render_to_string('tree_dir_add_file.html', {'file': dire, 'subfiles': sub})
+        yield loader.render_to_string('file_tree/tree_dir_add_file.html', {'file': dire, 'subfiles': sub})
 
 
 def index(request, file_id=None):
@@ -130,7 +130,7 @@ def delete_choose(request):
     context = {
         'subfiles': delete_files_tree_maker(directories)
     }
-    return render(request, 'choose.html', context)
+    return render(request, 'file_tree/choose.html', context)
 
 
 def add_dir_choose(request):
@@ -141,7 +141,7 @@ def add_dir_choose(request):
     context = {
         'subfiles': add_dir_files_tree_maker(directories)
     }
-    return render(request, 'choose.html', context)
+    return render(request, 'file_tree/choose.html', context)
 
 
 def add_file_choose(request):
@@ -152,7 +152,7 @@ def add_file_choose(request):
     context = {
         'subfiles': add_file_files_tree_maker(directories)
     }
-    return render(request, 'choose.html', context)
+    return render(request, 'file_tree/choose.html', context)
 
 
 def add_dir(request, dir_id):
