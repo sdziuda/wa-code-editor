@@ -6,6 +6,7 @@
         <title>Compiler</title>
         <link rel="stylesheet" href="{% static 'code_editor/style.css' %}">
         <script src="{% static 'code_editor/theme.js' %}"></script>
+        <script src="{% static 'code_editor/dropdown_controller.js' %}"></script>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta charset="UTF-8">
     </head>
@@ -14,7 +15,12 @@
         <div class="container">
             <div class="navbar">
                 <div class="navbar-item">
-                    File
+                    <button onclick="drop()" class="dropbtn">File</button>
+                    <div id="myDropdown" class="dropdown-content">
+                        <a href="{% url 'add_file_choose' %}">New File</a>
+                        <a href="{% url 'add_dir_choose' %}">New Directory</a>
+                        <a href="{% url 'delete_choose' %}">Delete...</a>
+                    </div>
                 </div>
                 <div class="navbar-item">
                     Edit

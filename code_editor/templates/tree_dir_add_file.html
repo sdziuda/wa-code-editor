@@ -1,0 +1,11 @@
+<li class="dir">
+    <div class="dir-container">
+        {{ file }}/
+        <a class="add" href="{% url 'add_file' file.id %}">[add file]</a>
+    </div>
+    <ul>
+        {% for f in subfiles %}
+            {{ f }}
+        {% endfor %}
+    </ul>
+</li>

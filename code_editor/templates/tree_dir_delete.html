@@ -1,0 +1,11 @@
+<li class="dir">
+    <div class="dir-container">
+        {{ file }}/
+        <a class="delete" href="{% url 'delete_dir' file.id %}">[x]</a>
+    </div>
+    <ul>
+        {% for f in subfiles %}
+            {{ f }}
+        {% endfor %}
+    </ul>
+</li>

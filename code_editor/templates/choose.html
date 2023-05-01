@@ -1,0 +1,26 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en" class="theme-dark">
+    <head>
+        <title>Compiler</title>
+        <link rel="stylesheet" href="{% static 'code_editor/style.css' %}">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta charset="UTF-8">
+    </head>
+    <body>
+        {% block content %}
+        <div class="container" style="width: 100%;">
+{% if user.is_authenticated %}
+    <ul style="padding: 20px 40px; width: 200%">
+        {% for f in subfiles %}
+            {{ f }}
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>Login to see your files</p>
+{% endif %}
+        </div>
+        {% endblock %}
+    </body>
+</html>

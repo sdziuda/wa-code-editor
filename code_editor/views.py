@@ -20,6 +20,55 @@ def files_tree_maker(directories):
         yield loader.render_to_string('tree_dir.html', {'file': dire, 'subfiles': sub})
 
 
+def delete_files_tree_maker(directories):
+    def get_subfiles(directory):
+        subdirectories = directory.get_directories()
+        for subdirectory in subdirectories:
+            subfiles = get_subfiles(subdirectory)
+            yield loader.render_to_string('tree_dir_delete.html',
+                                          {'file': subdirectory, 'subfiles': subfiles})
+        files = directory.get_files()
+        for f in files:
+            yield loader.render_to_string('tree_file_delete_only.html', {'file': f})
+
+    for dire in directories:
+        sub = get_subfiles(dire)
+        yield loader.render_to_string('tree_dir_delete.html', {'file': dire, 'subfiles': sub})
+
+
+def add_dir_files_tree_maker(directories):
+    def get_subfiles(directory):
+        subdirectories = directory.get_directories()
+        for subdirectory in subdirectories:
+            subfiles = get_subfiles(subdirectory)
+            yield loader.render_to_string('tree_dir_add_dir.html',
+                                          {'file': subdirectory, 'subfiles': subfiles})
+        files = directory.get_files()
+        for f in files:
+            yield loader.render_to_string('tree_file_no_opt.html', {'file': f})
+
+    yield loader.render_to_string('add_root.html')
+    for dire in directories:
+        sub = get_subfiles(dire)
+        yield loader.render_to_string('tree_dir_add_dir.html', {'file': dire, 'subfiles': sub})
+
+
+def add_file_files_tree_maker(directories):
+    def get_subfiles(directory):
+        subdirectories = directory.get_directories()
+        for subdirectory in subdirectories:
+            subfiles = get_subfiles(subdirectory)
+            yield loader.render_to_string('tree_dir_add_file.html',
+                                          {'file': subdirectory, 'subfiles': subfiles})
+        files = directory.get_files()
+        for f in files:
+            yield loader.render_to_string('tree_file_no_opt.html', {'file': f})
+
+    for dire in directories:
+        sub = get_subfiles(dire)
+        yield loader.render_to_string('tree_dir_add_file.html', {'file': dire, 'subfiles': sub})
+
+
 def index(request, file_id=None):
     if not request.user.is_authenticated:
         return render(request, 'index.html')
@@ -71,6 +120,39 @@ def delete_dir(request, dir_id):
         return render(request, 'index.html', context)
     directory.delete_directory()
     return HttpResponseRedirect(next_red)
+
+
+def delete_choose(request):
+    if not request.user.is_authenticated:
+        return render(request, 'index.html')
+    directories = Directory.objects.filter(owner=request.user, parent=None, available=True)
+
+    context = {
+        'subfiles': delete_files_tree_maker(directories)
+    }
+    return render(request, 'choose.html', context)
+
+
+def add_dir_choose(request):
+    if not request.user.is_authenticated:
+        return render(request, 'index.html')
+    directories = Directory.objects.filter(owner=request.user, parent=None, available=True)
+
+    context = {
+        'subfiles': add_dir_files_tree_maker(directories)
+    }
+    return render(request, 'choose.html', context)
+
+
+def add_file_choose(request):
+    if not request.user.is_authenticated:
+        return render(request, 'index.html')
+    directories = Directory.objects.filter(owner=request.user, parent=None, available=True)
+
+    context = {
+        'subfiles': add_file_files_tree_maker(directories)
+    }
+    return render(request, 'choose.html', context)
 
 
 def add_dir(request, dir_id):
