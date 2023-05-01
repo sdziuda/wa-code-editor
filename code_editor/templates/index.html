@@ -1,0 +1,101 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en" class="theme-dark">
+    <head>
+        <title>Compiler</title>
+        <link rel="stylesheet" href="{% static 'code_editor/style.css' %}">
+        <script src="{% static 'code_editor/theme.js' %}"></script>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta charset="UTF-8">
+    </head>
+    <body>
+        {% block content %}
+        <div class="container">
+            <div class="navbar">
+                <div class="navbar-item">
+                    File
+                </div>
+                <div class="navbar-item">
+                    Edit
+                </div>
+                <div class="navbar-item">
+                    Options
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="theme-switch" checked onclick="toggleTheme()">
+                    <span class="slider round"></span>
+                </label>
+                <label for="theme-switch" class="theme-label">Dark mode</label>
+            </div>
+            <div class="sidebar">
+                    {% if user.is_authenticated %}
+                        /<br>
+                        <ul>
+                            {% for f in subfiles %}
+                                {{ f }}
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>Login to see your files</p>
+                    {% endif %}
+            </div>
+            <div class="main">
+                <pre>
+                    {% if user.is_authenticated %}
+{{ file }}
+                    {% endif %}
+                </pre>
+            </div>
+            <div class="snippet">
+                <pre>
+void setup()
+{
+    // set timer 0 mode 1
+    TMOD = 0x01;
+    TH0 = 0x4C;
+    TL0 = 0x00;
+
+    // start timer 0
+    TR0 = 1;
+    // enable timer 0 interrupt
+    ET0 = 1;
+    // enable all interrupt
+    EA = 1;
+}
+                </pre>
+            </div>
+            <div class="tab">
+                <div class="tabbar">
+                    <div class="tabbar-item">
+                        Tab1
+                    </div>
+                    <div class="tabbar-item">
+                        Tab2
+                    </div>
+                    <div class="tabbar-item">
+                        Tab3
+                    </div>
+                    <div class="tabbar-item">
+                        Tab4
+                    </div>
+                </div>
+                <div class="tab-content">
+                    <div class="tab-area" id="tab1">
+                        Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some textSome text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some text Some textSome text Some text Some text Some text Some text Some text Some text
+                    </div>
+                    <div class="tab-area" id="tab2">
+                        Tab2
+                    </div>
+                    <div class="tab-area" id="tab3">
+                        Tab3
+                    </div>
+                    <div class="tab-area" id="tab4">
+                        Tab4
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endblock %}
+    </body>
+</html>
