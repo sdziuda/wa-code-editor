@@ -40,6 +40,31 @@ input {
     border-radius: 5px;
 }
 
+p {
+    margin: 0;
+    font-size: 2.5vh;
+}
+
+.std-label {
+    padding: 15px 0;
+    font-size: 2.5vh;
+}
+
+.std-select {
+    padding: 5px;
+    border-radius: 5px;
+    font-size: 2vh;
+}
+
+.row {
+    display: flex;
+    flex-direction: row;
+    align-items: start;
+    justify-content: start;
+    gap: 10px;
+    padding: 10px 10px 0 0;
+}
+
 .input-btn {
     background-color: var(--link-color);
     border: transparent 2px solid;
@@ -315,6 +340,10 @@ input:checked + .slider:before {
     background-color: var(--snippet-color);
 }
 
+#bar1 {
+    background-color: var(--snippet-color);
+}
+
 .tab-content {
     height: 85%;
     background-color: var(--snippet-color);
@@ -340,6 +369,18 @@ input:checked + .slider:before {
 }
 
 #tab4 {
+    display: none;
+}
+
+#procmcs51 {
+    display: block;
+}
+
+#procz80 {
+    display: none;
+}
+
+#procstm8 {
     display: none;
 }
 

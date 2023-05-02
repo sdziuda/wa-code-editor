@@ -9,6 +9,7 @@ function toggleTheme() {
    } else {
        setTheme('theme-dark');
    }
+   change_tab(localStorage.getItem('tab'));
 }
 
 (function () {
