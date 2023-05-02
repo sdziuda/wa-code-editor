@@ -1,6 +1,7 @@
 function setTheme(themeName) {
     localStorage.setItem('theme', themeName);
     document.documentElement.className = themeName;
+    document.getElementById("theme-switch").checked = themeName === 'theme-dark';
 }
 
 function toggleTheme() {
@@ -13,5 +14,10 @@ function toggleTheme() {
 }
 
 (function () {
-    setTheme('theme-dark');
+    let theme = localStorage.getItem('theme');
+    if (theme === null) {
+        setTheme('theme-dark');
+    } else {
+        setTheme(theme);
+    }
 })();

@@ -87,6 +87,50 @@ class StandardForm(forms.Form):
                             label='Choose C standard')
 
 
+class OptimizationForm(forms.Form):
+    speed = forms.BooleanField(label='--opt-code-speed', required=False)
+    reverse = forms.BooleanField(label='--noloopreverse', required=False)
+    nolab = forms.BooleanField(label='--nolabelopt', required=False)
+
+
+def opt_to_val(speed, reverse, nolab):
+    if speed and reverse and nolab:
+        return 'speed+reverse+nolab'
+    elif speed and reverse:
+        return 'speed+reverse'
+    elif speed and nolab:
+        return 'speed+nolab'
+    elif reverse and nolab:
+        return 'reverse+nolab'
+    elif speed:
+        return 'speed'
+    elif reverse:
+        return 'reverse'
+    elif nolab:
+        return 'nolab'
+    else:
+        return 'none'
+
+
+def val_to_opt(opt):
+    if opt == 'speed+reverse+nolab':
+        return True, True, True
+    elif opt == 'speed+reverse':
+        return True, True, False
+    elif opt == 'speed+nolab':
+        return True, False, True
+    elif opt == 'reverse+nolab':
+        return False, True, True
+    elif opt == 'speed':
+        return True, False, False
+    elif opt == 'reverse':
+        return False, True, False
+    elif opt == 'nolab':
+        return False, False, True
+    else:
+        return False, False, False
+
+
 class ProcessorForm(forms.Form):
     proc = forms.ChoiceField(choices=[('mcs51', 'MCS51'), ('z80', 'Z80'), ('stm8', 'STM8')],
                              label='Choose processor')
@@ -95,6 +139,33 @@ class ProcessorForm(forms.Form):
 class MCS51Form(forms.Form):
     mcs51 = forms.ChoiceField(choices=[('small', 'small'), ('medium', 'medium'), ('large', 'large'), ('huge', 'huge')],
                               label='Choose model')
+
+
+class Z80Form(forms.Form):
+    callee = forms.BooleanField(label='--callee-saves-bc', required=False)
+    reserve = forms.BooleanField(label='--reserve-regs-iy', required=False)
+
+
+def z80_to_val(z80):
+    if z80 == 'none':
+        return False, False
+    elif z80 == 'callee':
+        return True, False
+    elif z80 == 'reserve':
+        return False, True
+    else:
+        return True, True
+
+
+def val_to_z80(callee, reserve):
+    if callee and reserve:
+        return 'callee+reserve'
+    elif callee:
+        return 'callee'
+    elif reserve:
+        return 'reserve'
+    else:
+        return 'none'
 
 
 class STM8Form(forms.Form):
@@ -115,6 +186,12 @@ def index(request, file_id=None):
         request.session['standard'] = 'c89'
         std = 'c89'
 
+    if 'optimization' in request.session:
+        optim = request.session['optimization']
+    else:
+        request.session['optimization'] = 'none'
+        optim = 'none'
+
     if 'processor' in request.session:
         proc = request.session['processor']
     else:
@@ -127,6 +204,12 @@ def index(request, file_id=None):
         request.session['mcs51'] = 'small'
         mcs51 = 'small'
 
+    if 'z80' in request.session:
+        z80 = request.session['z80']
+    else:
+        request.session['z80'] = 'none'
+        z80 = 'none'
+
     if 'stm8' in request.session:
         stm8 = request.session['stm8']
     else:
@@ -134,20 +217,28 @@ def index(request, file_id=None):
         stm8 = 'medium'
 
     context['std'] = std
+    context['optim'] = optim
     context['proc'] = proc
     context['mcs51'] = mcs51
+    context['z80'] = z80
     context['stm8'] = stm8
     std_form = StandardForm()
+    optim_form = OptimizationForm()
     proc_form = ProcessorForm()
     mcs51_form = MCS51Form()
+    z80_form = Z80Form()
     stm8_form = STM8Form()
     std_form.initial['std'] = std
+    optim_form.initial['speed'], optim_form.initial['reverse'], optim_form.initial['nolab'] = val_to_opt(optim)
     proc_form.initial['proc'] = proc
     mcs51_form.initial['mcs51'] = mcs51
+    z80_form.initial['callee'], z80_form.initial['reserve'] = z80_to_val(z80)
     stm8_form.initial['stm8'] = stm8
     context['std_form'] = std_form
+    context['optim_form'] = optim_form
     context['proc_form'] = proc_form
     context['mcs51_form'] = mcs51_form
+    context['z80_form'] = z80_form
     context['stm8_form'] = stm8_form
     set_file(request, file_id, context)
 
@@ -160,6 +251,15 @@ def index(request, file_id=None):
 
             context['std_form'] = std_form
             context['std'] = std
+        if 'optimization_opt' in request.POST:
+            optim_form = OptimizationForm(request.POST)
+            if optim_form.is_valid():
+                optim = opt_to_val(optim_form.cleaned_data['speed'], optim_form.cleaned_data['reverse'],
+                                   optim_form.cleaned_data['nolab'])
+                request.session['optimization'] = optim
+
+            context['optim_form'] = optim_form
+            context['optim'] = optim
         if 'processor_opt' in request.POST:
             proc_form = ProcessorForm(request.POST)
             if proc_form.is_valid():
@@ -176,6 +276,14 @@ def index(request, file_id=None):
 
             context['mcs51_form'] = mcs51_form
             context['mcs51'] = mcs51
+        if 'z80_opt' in request.POST:
+            z80_form = Z80Form(request.POST)
+            if z80_form.is_valid():
+                z80 = val_to_z80(z80_form.cleaned_data['callee'], z80_form.cleaned_data['reserve'])
+                request.session['z80'] = z80
+
+            context['z80_form'] = z80_form
+            context['z80'] = z80
         if 'stm8_opt' in request.POST:
             stm8_form = STM8Form(request.POST)
             if stm8_form.is_valid():
