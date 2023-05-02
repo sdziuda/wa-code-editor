@@ -96,6 +96,13 @@ input[type="submit"] {
     padding: 10px;
 }
 
+.input-btn:hover {
+    cursor: pointer;
+    background-color: var(--link-color);
+    box-shadow: 0 0 5px var(--link-color);
+    color: var(--text-hover);
+}
+
 .std-button:hover {
     cursor: pointer;
     background-color: var(--link-color);

@@ -10,11 +10,11 @@
     </head>
     <body>
         {% block content %}
-            <form action="{% url 'add_file' dir_id %}" method="post">
+            <form action="{% url 'add_file' dir_id %}" method="post" style="flex-direction: column; padding: 10px">
                 {% csrf_token %}
                 {{ form.as_table }}
                 <div style="height: 10px;"></div>
-                <input class="input-btn" type="submit" value="Add">
+                <input class="input-btn" type="submit" value="Add" style="height: 7vh; width: 7vw">
             </form>
         {% endblock %}
     </body>
