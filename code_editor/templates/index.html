@@ -8,7 +8,6 @@
         <script src="{% static 'code_editor/theme.js' %}"></script>
         <script src="{% static 'code_editor/dropdown_controller.js' %}"></script>
         <script src="{% static 'code_editor/tab_controller.js' %}"></script>
-        <script src="{% static 'code_editor/processor_controller.js' %}"></script>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta charset="UTF-8">
     </head>
@@ -58,20 +57,11 @@
             </div>
             <div class="snippet">
                 <pre>
-void setup()
-{
-    // set timer 0 mode 1
-    TMOD = 0x01;
-    TH0 = 0x4C;
-    TL0 = 0x00;
-
-    // start timer 0
-    TR0 = 1;
-    // enable timer 0 interrupt
-    ET0 = 1;
-    // enable all interrupt
-    EA = 1;
-}
+                    {% if user.is_authenticated %}
+{{ std }}
+{{ proc }}
+                        {{ formset.errors }}
+                    {% endif %}
                 </pre>
             </div>
             <div class="tab">
@@ -91,12 +81,11 @@ void setup()
                 </div>
                 <div class="tab-content">
                     <div class="tab-area" id="tab1">
-                        <label class="std-label" for="standard">Choose C standard:</label>
-                        <select class="std-select" name="standard" id="standard">
-                            <option value="c89">C89</option>
-                            <option value="c99">C99</option>
-                            <option value="c11">C11</option>
-                        </select>
+                        <form action="" method="post" name="standard_opt">
+                            {% csrf_token %}
+                            {{ std_form.as_p }}
+                            <input type="submit" value="Save" class="std-button" name="standard_opt"">
+                        </form>
                     </div>
                     <div class="tab-area" id="tab2">
                         <p>Choose optimizations:</p>
@@ -123,12 +112,11 @@ void setup()
                         </div>
                     </div>
                     <div class="tab-area" id="tab3">
-                        <label class="std-label" for="processor">Choose processor:</label>
-                        <select class="std-select" name="processor" id="processor" onchange="change_proc()">
-                            <option value="mcs51">MCS51</option>
-                            <option value="z80">Z80</option>
-                            <option value="stm8">STM8</option>
-                        </select>
+                        <form action="" method="post" name="processor_opt" id="processor_opt">
+                            {% csrf_token %}
+                            {{ proc_form.as_p }}
+                            <input type="submit" value="Save" class="std-button" name="processor_opt" onclick="change_proc()">
+                        </form>
                     </div>
                     <div class="tab-area" id="tab4">
                         <div id="procmcs51">
@@ -167,6 +155,8 @@ void setup()
                             </select>
                         </div>
                     </div>
+
+                    <script src="{% static 'code_editor/processor_controller.js' %}"></script>
                 </div>
             </div>
         </div>

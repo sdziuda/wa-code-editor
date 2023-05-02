@@ -70,25 +70,79 @@ def add_file_files_tree_maker(directories):
         yield loader.render_to_string('file_tree/tree_dir_add_file.html', {'file': dire, 'subfiles': sub})
 
 
-def index(request, file_id=None):
-    if not request.user.is_authenticated:
-        return render(request, 'index.html')
-    directories = Directory.objects.filter(owner=request.user, parent=None, available=True)
-
-    context = {
-        'subfiles': files_tree_maker(directories)
-    }
+def set_file(request, file_id, context):
     if file_id is None:
-        return render(request, 'index.html', context)
+        context['file'] = ''
     else:
         file = File.objects.get(id=file_id)
 
         if file.owner != request.user:
             context['file'] = 'You are not the owner of this file'
-            return render(request, 'index.html', context)
+        else:
+            context['file'] = file.content
 
-        context['file'] = file.content
-        return render(request, 'index.html', context)
+
+class StandardForm(forms.Form):
+    name = forms.ChoiceField(choices=[('c89', 'C89'), ('c99', 'C99'), ('c11', 'C11')],
+                             label='Choose C standard')
+
+
+class ProcessorForm(forms.Form):
+    proc = forms.ChoiceField(choices=[('mcs51', 'MCS51'), ('z80', 'Z80'), ('stm8', 'STM8')],
+                             label='Choose processor',
+                             widget=forms.Select(attrs={'id': 'id_proc'}))
+
+
+def index(request, file_id=None):
+    if not request.user.is_authenticated:
+        return render(request, 'index.html')
+
+    directories = Directory.objects.filter(owner=request.user, parent=None, available=True)
+    context = {'subfiles': files_tree_maker(directories)}
+
+    if 'standard' in request.session:
+        std = request.session['standard']
+    else:
+        request.session['standard'] = 'c89'
+        std = 'c89'
+
+    if 'processor' in request.session:
+        proc = request.session['processor']
+    else:
+        request.session['processor'] = 'mcs51'
+        proc = 'mcs51'
+
+    context['std'] = std
+    context['proc'] = proc
+    std_form = StandardForm()
+    proc_form = ProcessorForm()
+    std_form.initial['name'] = std
+    proc_form.initial['proc'] = proc
+    context['std_form'] = std_form
+    context['proc_form'] = proc_form
+    set_file(request, file_id, context)
+
+    if request.method == 'POST':
+        if 'standard_opt' in request.POST:
+            std_form = StandardForm(request.POST)
+            if std_form.is_valid():
+                std = std_form.cleaned_data['name']
+                request.session['standard'] = std
+
+            context['std_form'] = std_form
+            context['std'] = std
+            set_file(request, file_id, context)
+        if 'processor_opt' in request.POST:
+            proc_form = ProcessorForm(request.POST)
+            if proc_form.is_valid():
+                proc = proc_form.cleaned_data['proc']
+                request.session['processor'] = proc
+
+            context['proc_form'] = proc_form
+            context['proc'] = proc
+            set_file(request, file_id, context)
+
+    return render(request, 'index.html', context)
 
 
 def delete_file(request, file_id):
