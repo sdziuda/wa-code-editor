@@ -58,8 +58,10 @@
             <div class="snippet">
                 <pre>
                     {% if user.is_authenticated %}
-{{ std }}
-{{ proc }}
+std: {{ std }}
+proc: {{ proc }}
+mcs51: {{ mcs51 }}
+stm8: {{ stm8 }}
                         {{ formset.errors }}
                     {% endif %}
                 </pre>
@@ -121,13 +123,11 @@
                     <div class="tab-area" id="tab4">
                         <div id="procmcs51">
                             <p>MCS51 options:</p>
-                            <label class="std-label" for="mcs51model" style="padding: 10px 10px">Choose model:</label>
-                            <select class="std-select" name="mcs51model" id="mcs51model">
-                                <option value="mcs51small">small</option>
-                                <option value="mcs51medium">medium</option>
-                                <option value="mcs51large">large</option>
-                                <option value="mcs51huge">huge</option>
-                            </select>
+                            <form action="" method="post" name="mcs51_opt" id="mcs51_opt" style="padding: 10px 10px">
+                                {% csrf_token %}
+                                {{ mcs51_form.as_p }}
+                                <input type="submit" value="Save" class="std-button" name="mcs51_opt">
+                            </form>
                         </div>
                         <div id="procz80">
                             <p>Z80 options:</p>
@@ -148,14 +148,13 @@
                         </div>
                         <div id="procstm8">
                             <p>STM8 options:</p>
-                            <label class="std-label" for="stm8model" style="padding: 10px 10px">Choose model:</label>
-                            <select class="std-select" name="stm8model" id="stm8model">
-                                <option value="stm8medium">medium</option>
-                                <option value="stm8large">large</option>
-                            </select>
+                            <form action="" method="post" name="stm8_opt" id="stm8_opt" style="padding: 10px 10px">
+                                {% csrf_token %}
+                                {{ stm8_form.as_p }}
+                                <input type="submit" value="Save" class="std-button" name="stm8_opt">
+                            </form>
                         </div>
                     </div>
-
                     <script src="{% static 'code_editor/processor_controller.js' %}"></script>
                 </div>
             </div>

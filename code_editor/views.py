@@ -83,14 +83,23 @@ def set_file(request, file_id, context):
 
 
 class StandardForm(forms.Form):
-    name = forms.ChoiceField(choices=[('c89', 'C89'), ('c99', 'C99'), ('c11', 'C11')],
-                             label='Choose C standard')
+    std = forms.ChoiceField(choices=[('c89', 'C89'), ('c99', 'C99'), ('c11', 'C11')],
+                            label='Choose C standard')
 
 
 class ProcessorForm(forms.Form):
     proc = forms.ChoiceField(choices=[('mcs51', 'MCS51'), ('z80', 'Z80'), ('stm8', 'STM8')],
-                             label='Choose processor',
-                             widget=forms.Select(attrs={'id': 'id_proc'}))
+                             label='Choose processor')
+
+
+class MCS51Form(forms.Form):
+    mcs51 = forms.ChoiceField(choices=[('small', 'small'), ('medium', 'medium'), ('large', 'large'), ('huge', 'huge')],
+                              label='Choose model')
+
+
+class STM8Form(forms.Form):
+    stm8 = forms.ChoiceField(choices=[('medium', 'medium'), ('large', 'large')],
+                             label='Choose model')
 
 
 def index(request, file_id=None):
@@ -112,26 +121,45 @@ def index(request, file_id=None):
         request.session['processor'] = 'mcs51'
         proc = 'mcs51'
 
+    if 'mcs51' in request.session:
+        mcs51 = request.session['mcs51']
+    else:
+        request.session['mcs51'] = 'small'
+        mcs51 = 'small'
+
+    if 'stm8' in request.session:
+        stm8 = request.session['stm8']
+    else:
+        request.session['stm8'] = 'medium'
+        stm8 = 'medium'
+
     context['std'] = std
     context['proc'] = proc
+    context['mcs51'] = mcs51
+    context['stm8'] = stm8
     std_form = StandardForm()
     proc_form = ProcessorForm()
-    std_form.initial['name'] = std
+    mcs51_form = MCS51Form()
+    stm8_form = STM8Form()
+    std_form.initial['std'] = std
     proc_form.initial['proc'] = proc
+    mcs51_form.initial['mcs51'] = mcs51
+    stm8_form.initial['stm8'] = stm8
     context['std_form'] = std_form
     context['proc_form'] = proc_form
+    context['mcs51_form'] = mcs51_form
+    context['stm8_form'] = stm8_form
     set_file(request, file_id, context)
 
     if request.method == 'POST':
         if 'standard_opt' in request.POST:
             std_form = StandardForm(request.POST)
             if std_form.is_valid():
-                std = std_form.cleaned_data['name']
+                std = std_form.cleaned_data['std']
                 request.session['standard'] = std
 
             context['std_form'] = std_form
             context['std'] = std
-            set_file(request, file_id, context)
         if 'processor_opt' in request.POST:
             proc_form = ProcessorForm(request.POST)
             if proc_form.is_valid():
@@ -140,7 +168,22 @@ def index(request, file_id=None):
 
             context['proc_form'] = proc_form
             context['proc'] = proc
-            set_file(request, file_id, context)
+        if 'mcs51_opt' in request.POST:
+            mcs51_form = MCS51Form(request.POST)
+            if mcs51_form.is_valid():
+                mcs51 = mcs51_form.cleaned_data['mcs51']
+                request.session['mcs51'] = mcs51
+
+            context['mcs51_form'] = mcs51_form
+            context['mcs51'] = mcs51
+        if 'stm8_opt' in request.POST:
+            stm8_form = STM8Form(request.POST)
+            if stm8_form.is_valid():
+                stm8 = stm8_form.cleaned_data['stm8']
+                request.session['stm8'] = stm8
+
+            context['stm8_form'] = stm8_form
+            context['stm8'] = stm8
 
     return render(request, 'index.html', context)
 
