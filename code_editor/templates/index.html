@@ -60,11 +60,17 @@
 </pre>
             </div>
             <div class="snippet">
-                <pre>
-{% if user.is_authenticated %}
-{{ compiled_file }}
-{% endif %}
-</pre>
+                {% if user.is_authenticated %}
+                    {% if compiled_file and compiled_file != 'Compilation error' %}
+                        <form action="{% url 'save_file' file_id %}" method="post" name="save_comp" style="flex-direction: column;">
+                            {% csrf_token %}
+                            <input type="submit" value="Save file" class="std-button" name="save_comp" style="align-self: start">
+                            <pre>{{ compiled_file }}</pre>
+                        </form>
+                    {% elif compiled_file %}
+                        <pre>{{ compiled_file }}</pre>
+                    {% endif %}
+                {% endif %}
             </div>
             <div class="tab">
                 <div class="tabbar">
@@ -92,20 +98,20 @@
                     <div class="tab-area" id="tab2">
                         <p>Choose optimizations:</p>
                         <form action="" method="post" name="optimization_opt" id="optimization_opt" style="padding: 0 10px; flex-direction: column;">
-                                {% csrf_token %}
-                                {% for opt in optim_form %}
-                                    <div class="row">
-                                        <label class="switch" style="margin-left: 0">
-                                            <input type="checkbox" id="{{ opt.name }}" name="{{ opt.name }}">
-                                            <span class="slider round"></span>
-                                        </label>
-                                        <label for="{{ opt.name }}" class="theme-label" style="margin: 0">{{ opt.label }}</label>
-                                    </div>
-                                {% endfor %}
-                                <div></div>
-                                <input type="submit" value="Save" class="std-button" name="optimization_opt" style="align-self: start;" onclick="save_optim()">
-                            </form>
-                            <script src="{% static 'code_editor/optim_controller.js' %}"></script>
+                            {% csrf_token %}
+                            {% for opt in optim_form %}
+                                <div class="row">
+                                    <label class="switch" style="margin-left: 0">
+                                        <input type="checkbox" id="{{ opt.name }}" name="{{ opt.name }}">
+                                        <span class="slider round"></span>
+                                    </label>
+                                    <label for="{{ opt.name }}" class="theme-label" style="margin: 0">{{ opt.label }}</label>
+                                </div>
+                            {% endfor %}
+                            <div></div>
+                            <input type="submit" value="Save" class="std-button" name="optimization_opt" style="align-self: start;" onclick="save_optim()">
+                        </form>
+                        <script src="{% static 'code_editor/optim_controller.js' %}"></script>
                     </div>
                     <div class="tab-area" id="tab3">
                         <form action="" method="post" name="processor_opt" id="processor_opt">

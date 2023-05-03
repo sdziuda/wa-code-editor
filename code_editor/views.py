@@ -2,7 +2,7 @@ from django import forms
 from django.shortcuts import render
 from code_editor.models import Directory, File
 from django.template import loader
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 import os
 
 
@@ -441,6 +441,8 @@ def compile_file(request, file_id):
         else:
             context['compiled_file'] = 'Compilation error'
 
+        request.session['compiled_file'] = context['compiled_file']
+
         if os.name == 'nt':
             if os.path.isfile(file.name[:-2] + '.asm'):
                 os.system('del ' + file.name[:-2] + '.asm')
@@ -451,6 +453,30 @@ def compile_file(request, file_id):
             os.system('rm ' + file.name)
 
     return render(request, 'index.html', context)
+
+
+def save_file(request, file_id):
+    if not request.user.is_authenticated:
+        return render(request, 'index.html')
+
+    directories = Directory.objects.filter(owner=request.user, parent=None, available=True)
+
+    compiled_file = request.session['compiled_file']
+    context = {'compiled_file': compiled_file}
+
+    file = File.objects.get(id=file_id)
+    name = file.name[:-2] + '.asm'
+    if file.owner != request.user:
+        context = {
+            'subfiles': files_tree_maker(directories),
+            'file': 'You are not the owner of this file'
+        }
+        return render(request, 'index.html', context)
+
+    response = HttpResponse(compiled_file, content_type='text/plain')
+    response['Content-Disposition'] = 'attachment; filename=' + name
+
+    return response
 
 
 def delete_file(request, file_id):
