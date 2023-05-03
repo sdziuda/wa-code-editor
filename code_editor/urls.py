@@ -5,6 +5,8 @@ from . import views
 
 urlpatterns = [
     path('', views.index, name='index'),
+    path('compile/', views.compile_no_file, name='compile_no_file'),
+    path('compile/<int:file_id>', views.compile_file, name='compile_file'),
     path('<int:file_id>/', views.index, name='index_file'),
     path('delete_file/<int:file_id>', views.delete_file, name='delete_file'),
     path('delete_dir/<int:dir_id>', views.delete_dir, name='delete_dir'),

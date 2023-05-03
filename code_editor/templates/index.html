@@ -17,7 +17,11 @@
                 <div class="navbar-item">
                     <button onclick="drop()" class="dropbtn">File</button>
                     <div id="myDropdown" class="dropdown-content">
-                        <a href="#">Compile</a>
+                        {% if file %}
+                            <a href="{% url 'compile_file' file_id %}">Compile</a>
+                        {% else %}
+                            <a href="{% url 'compile_no_file' %}">No file selected</a>
+                        {% endif %}
                         <a href="{% url 'add_file_choose' %}">New File</a>
                         <a href="{% url 'add_dir_choose' %}">New Directory</a>
                         <a href="{% url 'delete_choose' %}">Delete...</a>
@@ -58,12 +62,7 @@
             <div class="snippet">
                 <pre>
 {% if user.is_authenticated %}
-std: {{ std }}
-optim: {{ optim }}
-proc: {{ proc }}
-mcs51: {{ mcs51 }}
-z80: {{ z80 }}
-stm8: {{ stm8 }}
+{{ compiled_file }}
 {% endif %}
 </pre>
             </div>

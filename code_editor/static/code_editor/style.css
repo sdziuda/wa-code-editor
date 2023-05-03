@@ -61,7 +61,7 @@ form {
 }
 
 select {
-    padding: 5px;
+    padding: 0.5vh;
     border-radius: 5px;
     font-size: 2vh;
     height: 4vh;
@@ -296,16 +296,17 @@ input:checked + .slider:before {
     display: none;
     position: absolute;
     background-color: var(--snippet-color);
-    min-width: 160px;
+    min-width: 25vh;
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
     z-index: 1;
 }
 
 .dropdown-content a {
-  color: var(--text-color);
-  padding: 12px 16px;
-  text-decoration: none;
-  display: block;
+    color: var(--text-color);
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    overflow: visible;
 }
 
 .dropdown-content a:hover {
@@ -357,6 +358,7 @@ input:checked + .slider:before {
     padding-left: 2px;
     gap: 2px;
     height: 15%;
+    overflow: auto;
 }
 
 .tabbar-item {
