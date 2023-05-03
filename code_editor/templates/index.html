@@ -53,11 +53,9 @@
                     {% endif %}
             </div>
             <div class="main">
-                <pre>
-{% if user.is_authenticated %}
-{{ file }}
-{% endif %}
-</pre>
+                {% if user.is_authenticated %}
+                    <pre>{{ file }}</pre>
+                {% endif %}
             </div>
             <div class="snippet">
                 {% if user.is_authenticated %}
