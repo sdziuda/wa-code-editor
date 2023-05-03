@@ -548,6 +548,10 @@ def add_dir(request, dir_id):
         return render(request, 'file_tree/add_dir.html', context)
 
 
+class UploadFileForm(forms.Form):
+    file = forms.FileField(label="Upload file")
+
+
 class FileForm(forms.Form):
     name = forms.CharField(label="Name", max_length=200)
     desc = forms.CharField(label="Description (optional)", max_length=600, required=False)
@@ -560,17 +564,29 @@ def add_file(request, dir_id):
         return render(request, 'index.html')
 
     if request.method == 'POST':
-        form = FileForm(request.POST)
-        if form.is_valid():
-            directory = Directory.objects.get(id=dir_id)
-            new_file = File(name=form.cleaned_data['name'], desc=form.cleaned_data['desc'],
-                            content=form.cleaned_data['content'], owner=request.user, parent=directory)
-            new_file.save()
-            return HttpResponseRedirect(next_red)
+        directory = Directory.objects.get(id=dir_id)
+        if 'add' in request.POST:
+            form = FileForm(request.POST)
+            if form.is_valid():
+                new_file = File(name=form.cleaned_data['name'], desc=form.cleaned_data['desc'],
+                                content=form.cleaned_data['content'], owner=request.user, parent=directory)
+                new_file.save()
+        elif 'upload' in request.POST:
+            up_form = UploadFileForm(request.POST, request.FILES)
+            if up_form.is_valid():
+                uploaded_file = request.FILES['file']
+                new_file = File(name=uploaded_file.name, desc='', content=uploaded_file.read().decode('utf-8'),
+                                owner=request.user, parent=directory)
+                new_file.save()
+            else:
+                print(up_form.errors)
+        return HttpResponseRedirect(next_red)
     else:
         form = FileForm()
+        up_form = UploadFileForm()
         context = {
             'form': form,
+            'up_form': up_form,
             'dir_id': dir_id
         }
         return render(request, 'file_tree/add_file.html', context)

@@ -10,11 +10,18 @@
     </head>
     <body>
         {% block content %}
-            <form action="{% url 'add_file' dir_id %}" method="post" style="flex-direction: column; padding: 10px">
+            <form action="{% url 'add_file' dir_id %}" enctype="multipart/form-data" id="upload" name="upload" method="post" style="flex-direction: column; padding: 10px">
+                {% csrf_token %}
+                {{ up_form.as_table }}
+                <input class="input-btn" type="submit" value="Upload" name="upload" style="height: 7vh; width: 7vw; align-self: start; margin-left: 10px">
+            </form>
+            <div style="height: 40px;"></div>
+            <p style="padding-left: 10px">Or add manually:</p>
+            <form action="{% url 'add_file' dir_id %}" id="add" name="add" method="post" style="flex-direction: column; padding: 10px">
                 {% csrf_token %}
                 {{ form.as_table }}
                 <div style="height: 10px;"></div>
-                <input class="input-btn" type="submit" value="Add" style="height: 7vh; width: 7vw">
+                <input class="input-btn" type="submit" value="Add" name="add" style="height: 7vh; width: 7vw">
             </form>
         {% endblock %}
     </body>
