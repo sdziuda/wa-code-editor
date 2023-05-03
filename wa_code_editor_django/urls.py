@@ -22,4 +22,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('code_editor/', include('code_editor.urls')),
     path('', RedirectView.as_view(url='code_editor/', permanent=True)),
+    path('accounts/', include('django.contrib.auth.urls')),
+    path('accounts/profile/', RedirectView.as_view(url='/code_editor/', permanent=True)),
 ]

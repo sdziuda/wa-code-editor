@@ -55,7 +55,7 @@ ROOT_URLCONF = 'wa_code_editor_django.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR/'code_editor/templates'],
+        'DIRS': [BASE_DIR/'code_editor/templates', BASE_DIR/'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

@@ -2,6 +2,10 @@ function drop() {
   document.getElementById("myDropdown").classList.toggle("show");
 }
 
+function dropOpt() {
+  document.getElementById("myDropdownOptions").classList.toggle("show");
+}
+
 window.onclick = function(event) {
   if (!event.target.matches('.dropbtn')) {
     let dropdowns = document.getElementsByClassName("dropdown-content");

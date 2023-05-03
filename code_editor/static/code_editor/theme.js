@@ -18,6 +18,10 @@ function toggleTheme() {
     if (theme === null) {
         setTheme('theme-dark');
     } else {
-        setTheme(theme);
+        if (theme === 'theme-light') {
+            setTheme('theme-light');
+        } else {
+            setTheme('theme-dark');
+        }
     }
 })();

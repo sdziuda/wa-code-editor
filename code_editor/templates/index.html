@@ -5,7 +5,6 @@
     <head>
         <title>Compiler</title>
         <link rel="stylesheet" href="{% static 'code_editor/style.css' %}">
-        <script src="{% static 'code_editor/dropdown_controller.js' %}"></script>
         <script src="{% static 'code_editor/tab_controller.js' %}"></script>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta charset="UTF-8">
@@ -31,7 +30,14 @@
                     Edit
                 </div>
                 <div class="navbar-item">
-                    Options
+                    <button onclick="dropOpt()" class="dropbtn">Options</button>
+                    <div id="myDropdownOptions" class="dropdown-content">
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'logout' %}">Logout</a>
+                        {% else %}
+                            <a href="{% url 'login' %}">Login</a>
+                        {% endif %}
+                    </div>
                 </div>
                 <label class="switch">
                     <input type="checkbox" id="theme-switch" onclick="toggleTheme()">
@@ -40,6 +46,7 @@
                 <label for="theme-switch" class="theme-label">Dark mode</label>
                 <script src="{% static 'code_editor/theme.js' %}"></script>
             </div>
+            <script src="{% static 'code_editor/dropdown_controller.js' %}"></script>
             <div class="sidebar">
                     {% if user.is_authenticated %}
                         /<br>
@@ -49,7 +56,7 @@
                             {% endfor %}
                         </ul>
                     {% else %}
-                        <p>Login to see your files</p>
+                        <p><a href="{% url 'login'%}">Login</a> to see your files</p>
                     {% endif %}
             </div>
             <div class="main">
