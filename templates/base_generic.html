@@ -16,7 +16,7 @@
 
             <div style="display: flex; flex-direction: column; align-self: end; position: relative; margin-left: auto">
                 {% if user.is_authenticated %}
-                    User: {{ user.get_username }}
+                    User: {{ user.appuser.nick }}
                     <a href="{% url 'logout' %}">Logout</a>
                 {% endif %}
             </div>

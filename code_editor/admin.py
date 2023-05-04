@@ -1,9 +1,10 @@
 from django.contrib import admin
 
 # Register your models here.
-from .models import Directory, File, Section
+from .models import Directory, File, Section, AppUser
 
 admin.site.register(Section)
+admin.site.register(AppUser)
 
 
 class SectionInline(admin.TabularInline):

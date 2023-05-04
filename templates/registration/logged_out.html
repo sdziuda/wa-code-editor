@@ -1,8 +1,9 @@
 {% extends "base_generic.html" %}
 
 {% block content %}
-    <div style="display: flex; flex-direction: column">
-        <p>Logged out!</p>
-        <a href="{% url 'login'%}">Click here to login again.</a>
+    <div style="display: flex; flex-direction: column; justify-content: center; align-content: center">
+        <p style="align-self: center">Logged out!</p>
+        <div style="height: 20px"></div>
+        <a href="{% url 'login'%}" style="align-self: center">Click here to log in again.</a>
     </div>
 {% endblock %}
