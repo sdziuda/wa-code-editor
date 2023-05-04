@@ -1,5 +1,5 @@
 from django import forms
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from code_editor.models import Directory, File, Section, SectionType
 from django.template import loader
 from django.http import HttpResponseRedirect, HttpResponse
@@ -333,17 +333,17 @@ def compile_no_file(request):
 def split_sections(text):
     sections = []
     section = ''
-    counter = 1
-    for line in text.splitlines():
-        if line.startswith(';------------------------'):
-            if counter == 0:
-                counter = 1
-            else:
-                sections.append(section)
-                section = ''
-                counter = 0
-        section += line + '\n'
+    i = 0
+    while i < len(text.splitlines()):
+        if text.splitlines()[i].startswith(';---------------') and text.splitlines()[i + 1][0] == ';' and \
+                ((text.splitlines()[i + 1][1].isupper() and not text.splitlines()[i - 1][1].isupper()) or
+                 (text.splitlines()[i + 1][1] == ' ' and text.splitlines()[i + 1][2].isupper())):
+            sections.append(section)
+            section = ''
+        section += text.splitlines()[i] + '\n'
+        i += 1
     sections.append(section)
+
     return sections
 
 
