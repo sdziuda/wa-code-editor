@@ -67,13 +67,16 @@
             </div>
             <div class="snippet">
                 {% if user.is_authenticated %}
-                    {% if compiled_file and compiled_file != 'Compilation error' %}
+                    {% if compiled_file and compilation_status != 'Compilation error' %}
                         <form action="{% url 'save_file' file_id %}" method="post" name="save_comp" style="flex-direction: column;">
                             {% csrf_token %}
                             <input type="submit" value="Save file" class="std-button" name="save_comp" style="align-self: start">
-                            <pre>{{ compiled_file }}</pre>
+                            {% for section in compiled_sections %}
+                                <pre class="section">{{ section }}</pre>
+                            {% endfor %}
                         </form>
                     {% elif compiled_file %}
+                        <p>Compilation error</p><br>
                         <pre>{{ compiled_file }}</pre>
                     {% endif %}
                 {% endif %}

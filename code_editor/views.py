@@ -4,6 +4,7 @@ from code_editor.models import Directory, File
 from django.template import loader
 from django.http import HttpResponseRedirect, HttpResponse
 import os
+import subprocess
 
 
 def files_tree_maker(directories):
@@ -329,6 +330,23 @@ def compile_no_file(request):
     return HttpResponseRedirect('/')
 
 
+def split_sections(text):
+    sections = []
+    section = ''
+    counter = 1
+    for line in text.splitlines():
+        if line.startswith(';------------------------'):
+            if counter == 0:
+                counter = 1
+            else:
+                sections.append(section)
+                section = ''
+                counter = 0
+        section += line + '\n'
+    sections.append(section)
+    return sections
+
+
 def compile_file(request, file_id):
     if not request.user.is_authenticated:
         return render(request, 'index.html')
@@ -428,18 +446,24 @@ def compile_file(request, file_id):
             proc_opt_cmd = z80_proc_opt_to_cmd(proc_opt)
 
         cmd = 'sdcc -S ' + std_cmd + ' ' + optim_cmd + ' ' + proc_cmd + ' ' + proc_opt_cmd + ' ' + context['file_name']
+        cmd = cmd.replace('  ', ' ')
         file_to_compile = open(file.name, 'w')
-        for line in file.content.split('\n'):
-            file_to_compile.write(line)
+        for line in file.content.split('\r\n'):
+            file_to_compile.write(line + '\n')
         file_to_compile.close()
-        os.system(cmd)
 
-        if os.path.isfile(file.name[:-2] + '.asm'):
+        shell_result = subprocess.run(cmd, shell=True, check=False, stderr=subprocess.PIPE, stdout=subprocess.PIPE,
+                                      text=True)
+
+        if shell_result.returncode == 0:
             compiled_file = open(file.name[:-2] + '.asm', 'r')
+            context['compilation_status'] = 'Compilation successful'
             context['compiled_file'] = compiled_file.read()
             compiled_file.close()
+            context['compiled_sections'] = split_sections(context['compiled_file'])
         else:
-            context['compiled_file'] = 'Compilation error'
+            context['compilation_status'] = 'Compilation error'
+            context['compiled_file'] = shell_result.stderr
 
         request.session['compiled_file'] = context['compiled_file']
 
@@ -462,7 +486,6 @@ def save_file(request, file_id):
     directories = Directory.objects.filter(owner=request.user, parent=None, available=True)
 
     compiled_file = request.session['compiled_file']
-    context = {'compiled_file': compiled_file}
 
     file = File.objects.get(id=file_id)
     name = file.name[:-2] + '.asm'
@@ -604,8 +627,6 @@ def add_file(request, dir_id):
                 new_file = File(name=uploaded_file.name, desc='', content=uploaded_file.read().decode('utf-8'),
                                 owner=request.user, parent=directory)
                 new_file.save()
-            else:
-                print(up_form.errors)
         return HttpResponseRedirect(next_red)
     else:
         form = FileForm()
