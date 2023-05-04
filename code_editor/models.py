@@ -71,10 +71,10 @@ class Section(models.Model):
     desc = models.CharField(max_length=600, blank=True)
     parent = models.ForeignKey(File, on_delete=models.CASCADE)
     creation_date = models.DateTimeField('creation date', auto_now_add=True)
-    section_start = models.IntegerField()
-    section_end = models.IntegerField()
-    section_type = models.CharField(max_length=3, choices=SectionType.choices),
-    section_status = models.CharField(max_length=2, choices=SectionStatus.choices),
+    start = models.IntegerField()
+    end = models.IntegerField()
+    type = models.CharField(max_length=3, choices=SectionType.choices)
+    status = models.CharField(max_length=2, choices=SectionStatus.choices, blank=True)
     status_desc = models.CharField(max_length=600, blank=True)
 
     def __str__(self):

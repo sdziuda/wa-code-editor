@@ -1,6 +1,6 @@
 from django import forms
-from django.shortcuts import render
-from code_editor.models import Directory, File
+from django.shortcuts import render, redirect
+from code_editor.models import Directory, File, Section, SectionType
 from django.template import loader
 from django.http import HttpResponseRedirect, HttpResponse
 import os
@@ -597,6 +597,140 @@ def add_dir(request, dir_id):
         return render(request, 'file_tree/add_dir.html', context)
 
 
+def find_variables(text):
+    res = []
+    it = 0
+    for line in text.splitlines():
+        sline = line.split()
+        it += 1
+        if len(sline) > 0:
+            if sline[0] == 'int' or sline[0] == 'float' or sline[0] == 'double' or sline[0] == 'char' \
+                    or sline[0] == 'bool' or sline[0] == 'string' or sline[0] == 'long' or sline[0] == 'short':
+                if sline[1][-1] == ';':
+                    res.append((it, it))
+                elif sline[2] == '=' and sline[3][-1] == ';':
+                    res.append((it, it))
+    return res
+
+
+def find_directives(text):
+    res = []
+    it = 0
+    for line in text.splitlines():
+        sline = line.split()
+        it += 1
+        if len(sline) > 0:
+            if sline[0] == '#include' or sline[0] == '#define' or sline[0] == '#undef' or sline[0] == '#error' \
+                    or sline[0] == '#pragma' or sline[0] == '#line':
+                res.append((it, it))
+    return res
+
+
+def find_asm(text):
+    res = []
+    it = 0
+    for line in text.splitlines():
+        sline = line.split()
+        it += 1
+        if len(sline) > 0:
+            if sline[0] == '__asm':
+                end_it = it
+                for line_end in text.splitlines()[it:]:
+                    end_it += 1
+                    if len(line_end) > 0 and line_end.split()[0] == '__endasm;':
+                        res.append((it, end_it))
+                        break
+    return res
+
+
+def find_comments(text):
+    res = []
+    it = 0
+    for line in text.splitlines():
+        it += 1
+        if line.find('//') != -1:
+            res.append((it, it))
+        elif line.find('/*') != -1:
+            if line.find('*/') != -1:
+                res.append((it, it))
+            else:
+                end_it = it
+                for line_end in text.splitlines()[it:]:
+                    end_it += 1
+                    if line_end.find('*/') != -1:
+                        res.append((it, end_it))
+                        break
+    return res
+
+
+def find_functions(text):
+    res = []
+    it = 0
+    for line in text.splitlines():
+        it += 1
+        if line.find('(') != -1 and line.find(')') != -1 and not line.split()[0].startswith('if') \
+                and not line.split()[0].startswith('for') and not line.split()[0].startswith('while') \
+                and not line.split()[0].startswith('switch'):
+            started = False
+            l_count = 0
+            r_count = 0
+            if line.find('{') != -1:
+                started = True
+                l_count += 1
+            end_it = it
+            for line_end in text.splitlines()[it:]:
+                end_it += 1
+                if line_end.find('{') != -1:
+                    started = True
+                    l_count += 1
+                if line_end.find('}') != -1:
+                    r_count += 1
+                if started and l_count == r_count:
+                    res.append((it, end_it))
+                    break
+    return res
+
+
+def split_file_to_sections(text):
+    res = {
+        'variables': find_variables(text),
+        'directives': find_directives(text),
+        'asm': find_asm(text),
+        'comments': find_comments(text),
+        'functions': find_functions(text)
+    }
+    return res
+
+
+def save_sections(file):
+    sec = split_file_to_sections(file.content)
+    var_sec = sec['variables']
+    for v in var_sec:
+        new_sec = Section(parent=file, start=v[0], end=v[1], name=f'var {v[0]}-{v[1]} {file.id}',
+                          type=SectionType.VARIABLE_DECLARATION)
+        new_sec.save()
+    dir_sec = sec['directives']
+    for d in dir_sec:
+        new_sec = Section(parent=file, start=d[0], end=d[1], name=f'dir {d[0]}-{d[1]} {file.id}',
+                          type=SectionType.COMPILER_DIRECTIVE)
+        new_sec.save()
+    asm_sec = sec['asm']
+    for a in asm_sec:
+        new_sec = Section(parent=file, start=a[0], end=a[1], name=f'asm {a[0]}-{a[1]} {file.id}',
+                          type=SectionType.ASEMBLER_CODE)
+        new_sec.save()
+    com_sec = sec['comments']
+    for c in com_sec:
+        new_sec = Section(parent=file, start=c[0], end=c[1], name=f'com {c[0]}-{c[1]} {file.id}',
+                          type=SectionType.COMMENT)
+        new_sec.save()
+    fun_sec = sec['functions']
+    for f in fun_sec:
+        new_sec = Section(parent=file, start=f[0], end=f[1], name=f'fun {f[0]}-{f[1]} {file.id}',
+                          type=SectionType.PROCEDURE)
+        new_sec.save()
+
+
 class UploadFileForm(forms.Form):
     file = forms.FileField(label="Upload file")
 
@@ -620,6 +754,7 @@ def add_file(request, dir_id):
                 new_file = File(name=form.cleaned_data['name'], desc=form.cleaned_data['desc'],
                                 content=form.cleaned_data['content'], owner=request.user, parent=directory)
                 new_file.save()
+                save_sections(new_file)
         elif 'upload' in request.POST:
             up_form = UploadFileForm(request.POST, request.FILES)
             if up_form.is_valid():
@@ -627,6 +762,7 @@ def add_file(request, dir_id):
                 new_file = File(name=uploaded_file.name, desc='', content=uploaded_file.read().decode('utf-8'),
                                 owner=request.user, parent=directory)
                 new_file.save()
+                save_sections(new_file)
         return HttpResponseRedirect(next_red)
     else:
         form = FileForm()

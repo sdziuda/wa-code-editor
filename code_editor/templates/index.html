@@ -98,13 +98,16 @@
                 </div>
                 <div class="tab-content">
                     <div class="tab-area" id="tab1">
+                    {% if user.is_authenticated %}
                         <form action="" method="post" name="standard_opt">
                             {% csrf_token %}
                             {{ std_form.as_p }}
                             <input type="submit" value="Save" class="std-button" name="standard_opt">
                         </form>
+                    {% endif %}
                     </div>
                     <div class="tab-area" id="tab2">
+                    {% if user.is_authenticated %}
                         <p>Choose optimizations:</p>
                         <form action="" method="post" name="optimization_opt" id="optimization_opt" style="padding: 0 10px; flex-direction: column;">
                             {% csrf_token %}
@@ -121,15 +124,19 @@
                             <input type="submit" value="Save" class="std-button" name="optimization_opt" style="align-self: start;" onclick="save_optim()">
                         </form>
                         <script src="{% static 'code_editor/optim_controller.js' %}"></script>
+                    {% endif %}
                     </div>
                     <div class="tab-area" id="tab3">
+                    {% if user.is_authenticated %}
                         <form action="" method="post" name="processor_opt" id="processor_opt">
                             {% csrf_token %}
                             {{ proc_form.as_p }}
                             <input type="submit" value="Save" class="std-button" name="processor_opt" onclick="change_proc()">
                         </form>
+                    {% endif %}
                     </div>
                     <div class="tab-area" id="tab4">
+                    {% if user.is_authenticated %}
                         <div id="procmcs51">
                             <p>MCS51 options:</p>
                             <form action="" method="post" name="mcs51_opt" id="mcs51_opt" style="padding: 10px 10px">
@@ -164,6 +171,7 @@
                                 <input type="submit" value="Save" class="std-button" name="stm8_opt">
                             </form>
                         </div>
+                    {% endif %}
                     </div>
                     <script src="{% static 'code_editor/processor_controller.js' %}"></script>
                 </div>
