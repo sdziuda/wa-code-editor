@@ -49,7 +49,11 @@
             <script src="{% static 'code_editor/dropdown_controller.js' %}"></script>
             <div class="sidebar">
                     {% if user.is_authenticated %}
-                        {{ user.appuser.nick }}'s files:<br><br>
+                        {% if user.appuser.nick %}
+                            {{ user.appuser.nick }}'s files:<br><br>
+                        {% else %}
+                            {{ user.username }}'s files:<br><br>
+                        {% endif %}
                         /<br>
                         <ul>
                             {% for f in subfiles %}
