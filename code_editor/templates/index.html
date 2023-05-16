@@ -70,9 +70,15 @@
                     {% if compiled_file and compilation_status != 'Compilation error' %}
                         <form action="{% url 'save_file' file_id %}" method="post" name="save_comp" style="flex-direction: column;">
                             {% csrf_token %}
-                            <input type="submit" value="Save file" class="std-button" name="save_comp" style="align-self: start">
+                            <div class="row">
+                                <input type="submit" value="Save file" class="std-button" name="save_comp" style="align-self: start; height: auto">
+                                <div class="std-button" id="col-or-exp" onclick="col_or_exp()">Collapse all</div>
+                            </div>
                             {% for section in compiled_sections %}
-                                <pre class="section">{{ section }}</pre>
+                                <div class="section">
+                                    <pre class="sec-tit" onclick="sec({{ section.id }})">{{ section.title }}</pre>
+                                    <pre class="sec-con" id="con{{ section.id }}">{{ section.content }}</pre>
+                                </div>
                             {% endfor %}
                         </form>
                     {% elif compiled_file %}
@@ -80,6 +86,7 @@
                         <pre>{{ compiled_file }}</pre>
                     {% endif %}
                 {% endif %}
+                <script src="{% static 'code_editor/section_dropdown_controller.js' %}"></script>
             </div>
             <div class="tab">
                 <div class="tabbar">

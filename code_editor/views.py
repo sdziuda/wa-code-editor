@@ -330,6 +330,21 @@ def compile_no_file(request):
     return HttpResponseRedirect('/')
 
 
+def split_section(section, ind):
+    title_count = 0
+    i = 0
+    title = ''
+    while i < len(section.splitlines()):
+        title += section.splitlines()[i] + '\n'
+        if section.splitlines()[i].startswith(';---------------') and title_count != 1:
+            title_count += 1
+        elif section.splitlines()[i].startswith(';---------------') and title_count == 1:
+            break
+        i += 1
+
+    return {'title': title, 'content': '\n'.join(section.splitlines()[i + 1:]), 'id': ind}
+
+
 def split_sections(text):
     sections = []
     section = ''
@@ -338,11 +353,12 @@ def split_sections(text):
         if text.splitlines()[i].startswith(';---------------') and text.splitlines()[i + 1][0] == ';' and \
                 ((text.splitlines()[i + 1][1].isupper() and not text.splitlines()[i - 1][1].isupper()) or
                  (text.splitlines()[i + 1][1] == ' ' and text.splitlines()[i + 1][2].isupper())):
-            sections.append(section)
+            if section != '':
+                sections.append(split_section(section, len(sections)))
             section = ''
         section += text.splitlines()[i] + '\n'
         i += 1
-    sections.append(section)
+    sections.append(split_section(section, len(sections)))
 
     return sections
 
