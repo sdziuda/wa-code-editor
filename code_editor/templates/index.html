@@ -15,7 +15,7 @@
                 <div class="navbar-item">
                     <button onclick="drop()" class="dropbtn">File</button>
                     <div id="myDropdown" class="dropdown-content">
-                        {% if file %}
+                        {% if file and file_id %}
                             <a href="{% url 'compile_file' file_id %}">Compile</a>
                         {% else %}
                             <a href="{% url 'compile_no_file' %}">No file selected</a>
