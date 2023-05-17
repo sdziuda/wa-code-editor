@@ -66,7 +66,13 @@
             </div>
             <div class="main">
                 {% if user.is_authenticated %}
-                    <pre>{{ file }}</pre>
+                    {% for line in file %}
+                        {% if not line.content %}
+                            <pre class="line" id="line{{ line.ind }}"> </pre>
+                        {% else %}
+                            <pre class="line" id="line{{ line.ind }}">{{ line.content }}</pre>
+                        {% endif %}
+                    {% endfor %}
                 {% endif %}
             </div>
             <div class="snippet">
@@ -81,15 +87,30 @@
                             {% for section in compiled_sections %}
                                 <div class="section">
                                     <pre class="sec-tit" onclick="sec({{ section.id }})">{{ section.title }}</pre>
-                                    <pre class="sec-con" id="con{{ section.id }}">{{ section.content }}</pre>
+                                    <div class="sec-con" id="con{{ section.id }}">
+                                        {% for line in section.content %}
+                                            {% if line.id is not None %}
+                                                <pre class="sec-line" id="sec-line{{ line.id }}">{{ line.content }}</pre>
+                                            {% else %}
+                                                <pre>{{ line.content }}</pre>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
                                 </div>
                             {% endfor %}
                         </form>
                     {% elif compiled_file %}
                         <p>Compilation error</p><br>
-                        <pre>{{ compiled_file }}</pre>
+                        {% for line in compiled_sections %}
+                            {% if line.id is not None %}
+                                <pre class="sec-line" id="sec-line{{ line.id }}">{{ line.content }}</pre>
+                            {% else %}
+                                <pre>{{ line.content }}</pre>
+                            {% endif %}
+                        {% endfor %}
                     {% endif %}
                 {% endif %}
+                <script src="{% static 'code_editor/highlight_controller.js' %}"></script>
                 <script src="{% static 'code_editor/section_dropdown_controller.js' %}"></script>
             </div>
             <div class="tab">

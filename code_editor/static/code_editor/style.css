@@ -368,6 +368,11 @@ input:checked + .slider:before {
     cursor: pointer;
 }
 
+.sec-line:hover {
+    cursor: pointer;
+    background-color: red;
+}
+
 .tab {
     grid-area: tab;
     background-color: var(--tab-color);

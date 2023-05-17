@@ -74,14 +74,14 @@ def add_file_files_tree_maker(directories):
 
 def set_file(request, file_id, context):
     if file_id is None:
-        context['file'] = ''
+        context['file'] = [{'content': '', 'ind': 1}]
     else:
         file = File.objects.get(id=file_id)
 
         if file.owner != request.user:
-            context['file'] = 'You are not the owner of this file'
+            context['file'] = [{'content': 'You are not the owner of this file', 'ind': 1}]
         else:
-            context['file'] = file.content
+            context['file'] = [{'ind': ind + 1, 'content': line} for ind, line in enumerate(file.content.splitlines())]
 
 
 class StandardForm(forms.Form):
@@ -330,7 +330,7 @@ def compile_no_file(request):
     return HttpResponseRedirect('/')
 
 
-def split_section(section, ind):
+def split_section(section, ind, file_name):
     title_count = 0
     i = 0
     title = ''
@@ -342,10 +342,37 @@ def split_section(section, ind):
             break
         i += 1
 
-    return {'title': title, 'content': '\n'.join(section.splitlines()[i + 1:]), 'id': ind}
+    section_content = []
+    for line in section.splitlines()[i + 1:]:
+        if line.startswith(';'):
+            line_cpy = line[1:]
+            line_cpy = line_cpy.lstrip()
+            if line_cpy.startswith(file_name):
+                line_cpy = line_cpy[len(file_name) + 1:]
+                line_id = line_cpy.split()[0][:-1]
+                section_content.append({'id': line_id, 'content': line})
+            else:
+                section_content.append({'id': None, 'content': line})
+        else:
+            section_content.append({'id': None, 'content': line})
+
+    return {'title': title, 'content': section_content, 'id': ind}
 
 
-def split_sections(text):
+def split_error(text, file_name):
+    error_content = []
+    for line in text.splitlines():
+        if line.startswith(file_name):
+            line = line[len(file_name) + 1:]
+            line_id = line.split()[0][:-1]
+            error_content.append({'id': line_id, 'content': line})
+        else:
+            error_content.append({'id': None, 'content': line})
+
+    return error_content
+
+
+def split_sections(text, file_name):
     sections = []
     section = ''
     i = 0
@@ -354,11 +381,11 @@ def split_sections(text):
                 ((text.splitlines()[i + 1][1].isupper() and not text.splitlines()[i - 1][1].isupper()) or
                  (text.splitlines()[i + 1][1] == ' ' and text.splitlines()[i + 1][2].isupper())):
             if section != '':
-                sections.append(split_section(section, len(sections)))
+                sections.append(split_section(section, len(sections), file_name))
             section = ''
         section += text.splitlines()[i] + '\n'
         i += 1
-    sections.append(split_section(section, len(sections)))
+    sections.append(split_section(section, len(sections), file_name))
 
     return sections
 
@@ -371,9 +398,9 @@ def compile_file(request, file_id):
     context = {'file_id': file_id, 'subfiles': files_tree_maker(directories)}
     file = File.objects.get(id=file_id)
     if file is None:
-        context['file'] = 'File not found'
+        context['file'] = [{'content': 'File not found', 'ind': 1}]
     if file.owner != request.user:
-        context['file'] = 'You are not the owner of this file'
+        context['file'] = [{'content': 'You are not the owner of this file', 'ind': 1}]
 
     std, optim, proc, mcs51, z80, stm8 = get_from_session(request)
 
@@ -399,7 +426,7 @@ def compile_file(request, file_id):
     context['file_name'] = ''
 
     if file is not None and file.owner == request.user:
-        context['file'] = file.content
+        context['file'] = [{'ind': ind + 1, 'content': line} for ind, line in enumerate(file.content.splitlines())]
         context['file_name'] = file.name
 
     if request.method == 'POST':
@@ -476,10 +503,11 @@ def compile_file(request, file_id):
             context['compilation_status'] = 'Compilation successful'
             context['compiled_file'] = compiled_file.read()
             compiled_file.close()
-            context['compiled_sections'] = split_sections(context['compiled_file'])
+            context['compiled_sections'] = split_sections(context['compiled_file'], file.name)
         else:
             context['compilation_status'] = 'Compilation error'
             context['compiled_file'] = shell_result.stderr
+            context['compiled_sections'] = split_error(shell_result.stderr, file.name)
 
         request.session['compiled_file'] = context['compiled_file']
 
