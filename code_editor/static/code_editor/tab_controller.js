@@ -13,5 +13,9 @@ function change_tab(i) {
 }
 
 (function () {
-    localStorage.setItem('tab', '1');
+    if (localStorage.getItem('tab') != null) {
+        change_tab(localStorage.getItem('tab'));
+    } else {
+        change_tab(1);
+    }
 })();
