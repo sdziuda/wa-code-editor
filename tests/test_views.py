@@ -34,7 +34,9 @@ class IndexViewTest(TestCase):
         self.client.login(username="test_user2", password="test_password2")
         response = self.client.get('/code_editor/' + str(File.objects.get(name="test_file").id) + '/')
         self.assertEqual(response.status_code, 200)
-        self.assertTrue(response.context.get('file') == 'You are not the owner of this file')
+        file = response.context.get('file')[0]
+        self.assertTrue(file is not None)
+        self.assertTrue(file['content'] == 'You are not the owner of this file')
 
 
 class CompileNoFileViewTest(TestCase):
