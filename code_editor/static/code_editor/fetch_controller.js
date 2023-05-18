@@ -7,10 +7,13 @@ document.addEventListener('DOMContentLoaded', function () {
         element.addEventListener('click', function (event) {
             localStorage.removeItem('file');
             localStorage.removeItem('file_id');
+            localStorage.removeItem('compilation');
             localStorage.setItem('file_id', file);
             fetchData(file).then(function (data) {
                 main.innerHTML = data;
-                document.getElementById('compile-dropdown').innerHTML = "<a href=\"/code_editor/compile/" + file + "\">Compile</a>";
+                document.getElementById('compile-dropdown').innerHTML = "<a onclick=\"compile(" + file + ")\">Compile</a>";
+                document.getElementsByClassName('snippet')[0].innerHTML = "";
+
                 localStorage.setItem('file', data);
             }).catch(function (error) {
                 console.error(error);
@@ -37,7 +40,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let file_id = localStorage.getItem('file_id');
     if (file_data) {
         document.getElementById('main').innerHTML = file_data;
-        document.getElementById('compile-dropdown').innerHTML = "<a href=\"/code_editor/compile/" + file_id + "\">Compile</a>";
+        document.getElementById('compile-dropdown').innerHTML = "<a onclick=\"compile(" + file_id + ")\">Compile</a>";
     } else {
         document.getElementById('main').innerHTML = "";
         document.getElementById('compile-dropdown').innerHTML = "<a href=\"/code_editor/compile/\">No file selected</a>";
