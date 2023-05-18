@@ -3,6 +3,13 @@ from django.contrib.auth.models import User
 from code_editor.models import Directory, File
 
 
+def create_user_file_dir():
+    User.objects.create_user(username="test_user", password="test_password")
+    user = User.objects.get(username="test_user")
+    Directory.objects.create(name="test_dir", owner=user)
+    File.objects.create(name="test_file.c", owner=user, parent=Directory.objects.get(name="test_dir"))
+
+
 class IndexViewTest(TestCase):
     def setUp(self):
         User.objects.create_user(username="test_user", password="test_password")
@@ -72,10 +79,7 @@ class CompileFileViewTest(TestCase):
 
 class SaveFileViewTest(TestCase):
     def setUp(self):
-        User.objects.create_user(username="test_user", password="test_password")
-        user = User.objects.get(username="test_user")
-        Directory.objects.create(name="test_dir", owner=user)
-        File.objects.create(name="test_file.c", owner=user, parent=Directory.objects.get(name="test_dir"))
+        create_user_file_dir()
 
     def test_save_file(self):
         response = self.client.post('/code_editor/save/' + str(File.objects.get(name="test_file.c").id))
@@ -84,10 +88,7 @@ class SaveFileViewTest(TestCase):
 
 class DeleteViewTest(TestCase):
     def setUp(self):
-        User.objects.create_user(username="test_user", password="test_password")
-        user = User.objects.get(username="test_user")
-        Directory.objects.create(name="test_dir", owner=user)
-        File.objects.create(name="test_file.c", owner=user, parent=Directory.objects.get(name="test_dir"))
+        create_user_file_dir()
 
     def test_delete_file(self):
         self.client.login(username="test_user", password="test_password")
@@ -104,10 +105,7 @@ class DeleteViewTest(TestCase):
 
 class DeleteNoReloadViewTest(TestCase):
     def setUp(self):
-        User.objects.create_user(username="test_user", password="test_password")
-        user = User.objects.get(username="test_user")
-        Directory.objects.create(name="test_dir", owner=user)
-        File.objects.create(name="test_file.c", owner=user, parent=Directory.objects.get(name="test_dir"))
+        create_user_file_dir()
 
     def test_delete_file(self):
         self.client.login(username="test_user", password="test_password")
