@@ -1,9 +1,9 @@
-<li class="dir">
+<li class="dir" id="dir-list-{{ file.id }}">
     <div class="dir-container">
         {{ file }}/
         <a class="add" href="{% url 'add_file' file.id %}">[add file]</a>
         <a class="add" href="{% url 'add_dir' file.id %}">[add dir]</a>
-        <a class="delete" href="{% url 'delete_dir' file.id %}">[x]</a>
+        <a class="delete" id="dire-{{ file.id }}">[x]</a>
     </div>
     <ul>
         {% for f in subfiles %}

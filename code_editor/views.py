@@ -470,6 +470,14 @@ def delete_file(request, file_id):
     return HttpResponseRedirect(next_red)
 
 
+def delete_file_no(request, file_id):
+    if request.user.is_authenticated:
+        file = File.objects.get(id=file_id)
+        if file.owner == request.user:
+            file.delete_file()
+    return HttpResponse()
+
+
 def delete_dir(request, dir_id):
     next_red = request.GET.get('next', '/')
     if not request.user.is_authenticated:
@@ -484,6 +492,14 @@ def delete_dir(request, dir_id):
         return render(request, 'index.html', context)
     directory.delete_directory()
     return HttpResponseRedirect(next_red)
+
+
+def delete_dir_no(request, dir_id):
+    if request.user.is_authenticated:
+        directory = Directory.objects.get(id=dir_id)
+        if directory.owner == request.user:
+            directory.delete_directory()
+    return HttpResponse()
 
 
 def delete_choose(request):

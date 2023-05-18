@@ -1,6 +1,6 @@
-<li>
+<li id="file-list-{{ file.id }}">
     <div class="file-container">
         <a class="file-link" id="{{ file.id }}">{{ file }}</a>
-        <a class="delete" href="{% url 'delete_file' file.id %}">[x]</a>
+        <a class="delete" id="file-{{ file.id }}">[x]</a>
     </div>
 </li>
