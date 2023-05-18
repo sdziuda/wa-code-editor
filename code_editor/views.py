@@ -3,6 +3,7 @@ from django.shortcuts import render
 from code_editor.models import Directory, File, Section, SectionType
 from django.template import loader
 from django.http import HttpResponseRedirect, HttpResponse
+import json
 import os
 import subprocess
 
@@ -255,55 +256,35 @@ def index(request, file_id=None):
         return render(request, 'main.html', context)
 
     if request.method == 'POST':
-        if 'standard_opt' in request.POST:
-            std_form = StandardForm(request.POST)
-            if std_form.is_valid():
-                std = std_form.cleaned_data['std']
-                request.session['standard'] = std
-
-            context['std_form'] = std_form
-            context['std'] = std
-        if 'optimization_opt' in request.POST:
-            optim_form = OptimizationForm(request.POST)
-            if optim_form.is_valid():
-                optim = opt_to_val(optim_form.cleaned_data['speed'], optim_form.cleaned_data['reverse'],
-                                   optim_form.cleaned_data['nolab'])
-                request.session['optimization'] = optim
-
-            context['optim_form'] = optim_form
-            context['optim'] = optim
-        if 'processor_opt' in request.POST:
-            proc_form = ProcessorForm(request.POST)
-            if proc_form.is_valid():
-                proc = proc_form.cleaned_data['proc']
-                request.session['processor'] = proc
-
-            context['proc_form'] = proc_form
-            context['proc'] = proc
-        if 'mcs51_opt' in request.POST:
-            mcs51_form = MCS51Form(request.POST)
-            if mcs51_form.is_valid():
-                mcs51 = mcs51_form.cleaned_data['mcs51']
-                request.session['mcs51'] = mcs51
-
-            context['mcs51_form'] = mcs51_form
-            context['mcs51'] = mcs51
-        if 'z80_opt' in request.POST:
-            z80_form = Z80Form(request.POST)
-            if z80_form.is_valid():
-                z80 = val_to_z80(z80_form.cleaned_data['callee'], z80_form.cleaned_data['reserve'])
-                request.session['z80'] = z80
-
-            context['z80_form'] = z80_form
-            context['z80'] = z80
-        if 'stm8_opt' in request.POST:
-            stm8_form = STM8Form(request.POST)
-            if stm8_form.is_valid():
-                stm8 = stm8_form.cleaned_data['stm8']
-                request.session['stm8'] = stm8
-
-            context['stm8_form'] = stm8_form
-            context['stm8'] = stm8
+        if b'standard_opt' in request.body:
+            data = json.loads(request.body.decode('utf-8'))
+            std = data['standard_opt']
+            request.session['standard'] = std
+        if b'optimization_opt' in request.body:
+            data = json.loads(request.body.decode('utf-8'))
+            speed = data['optimization_opt']['speed']
+            reverse = data['optimization_opt']['reverse']
+            nolab = data['optimization_opt']['nolab']
+            optim = opt_to_val(speed, reverse, nolab)
+            request.session['optimization'] = optim
+        if b'processor_opt' in request.body:
+            data = json.loads(request.body.decode('utf-8'))
+            proc = data['processor_opt']
+            request.session['processor'] = proc
+        if b'mcs51_opt' in request.body:
+            data = json.loads(request.body.decode('utf-8'))
+            mcs51 = data['mcs51_opt']
+            request.session['mcs51'] = mcs51
+        if b'z80_opt' in request.body:
+            data = json.loads(request.body.decode('utf-8'))
+            callee = data['z80_opt']['callee']
+            reserve = data['z80_opt']['reserve']
+            z80 = val_to_z80(callee, reserve)
+            request.session['z80'] = z80
+        if b'stm8_opt' in request.body:
+            data = json.loads(request.body.decode('utf-8'))
+            stm8 = data['stm8_opt']
+            request.session['stm8'] = stm8
 
     return render(request, 'index.html', context)
 

@@ -37,7 +37,6 @@ function compile(file_id) {
 async function fetchCompileData(file) {
     try {
         const response = await fetch("/code_editor/compile/" + file);
-        console.log(response)
         if (!response.ok) {
             throw new Error('AJAX request failed: ' + response.status);
         }
