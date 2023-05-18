@@ -102,6 +102,26 @@ class DeleteViewTest(TestCase):
         self.assertFalse(Directory.objects.filter(name="test_dir")[0].available)
 
 
+class DeleteNoReloadViewTest(TestCase):
+    def setUp(self):
+        User.objects.create_user(username="test_user", password="test_password")
+        user = User.objects.get(username="test_user")
+        Directory.objects.create(name="test_dir", owner=user)
+        File.objects.create(name="test_file.c", owner=user, parent=Directory.objects.get(name="test_dir"))
+
+    def test_delete_file(self):
+        self.client.login(username="test_user", password="test_password")
+        response = self.client.post('/code_editor/delete_file_no/' + str(File.objects.get(name="test_file.c").id))
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(File.objects.filter(name="test_file.c")[0].available)
+
+    def test_delete_dir(self):
+        self.client.login(username="test_user", password="test_password")
+        response = self.client.post('/code_editor/delete_dir_no/' + str(Directory.objects.get(name="test_dir").id))
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(Directory.objects.filter(name="test_dir")[0].available)
+
+
 class ChooseViewTest(TestCase):
     def test_delete_choose(self):
         response = self.client.post('/code_editor/delete/')
