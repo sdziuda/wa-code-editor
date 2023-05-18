@@ -15,11 +15,7 @@
                 <div class="navbar-item">
                     <button onclick="drop()" class="dropbtn">File</button>
                     <div id="myDropdown" class="dropdown-content">
-                        {% if file and file_id %}
-                            <a href="{% url 'compile_file' file_id %}">Compile</a>
-                        {% else %}
-                            <a href="{% url 'compile_no_file' %}">No file selected</a>
-                        {% endif %}
+                        <div id="compile-dropdown"></div>
                         <a href="{% url 'add_file_choose' %}">New File</a>
                         <a href="{% url 'add_dir_choose' %}">New Directory</a>
                         <a href="{% url 'delete_choose' %}">Delete...</a>
@@ -63,17 +59,8 @@
                         <p><a href="{% url 'login'%}">Login</a> to see your files</p>
                     {% endif %}
             </div>
-            <div class="main">
-                {% if user.is_authenticated %}
-                    {% for line in file %}
-                        {% if not line.content %}
-                            <pre class="line" id="line{{ line.ind }}"> </pre>
-                        {% else %}
-                            <pre class="line" id="line{{ line.ind }}">{{ line.content }}</pre>
-                        {% endif %}
-                    {% endfor %}
-                {% endif %}
-            </div>
+            <div class="main" id="main"></div>
+            <script src="{% static 'code_editor/fetch_controller.js' %}"></script>
             <div class="snippet">
                 {% if user.is_authenticated %}
                     {% if compiled_file and compilation_status != 'Compilation error' %}

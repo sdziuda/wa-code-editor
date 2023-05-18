@@ -251,6 +251,8 @@ def index(request, file_id=None):
     set_file(request, file_id, context)
     if file_id is not None:
         context['file_id'] = file_id
+        request.session['file_id'] = file_id
+        return render(request, 'main.html', context)
 
     if request.method == 'POST':
         if 'standard_opt' in request.POST:
