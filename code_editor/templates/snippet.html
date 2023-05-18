@@ -23,7 +23,7 @@
         </form>
     {% elif compiled_file %}
         <p>Compilation error</p><br>
-        {% for line in compiled_sections %}
+        {% for line in compiled_errors %}
             {% if line.id is not None %}
                 <pre class="sec-line" id="sec-line{{ line.id }}">{{ line.content }}</pre>
             {% else %}

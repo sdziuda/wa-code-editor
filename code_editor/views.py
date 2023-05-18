@@ -434,7 +434,7 @@ def compile_file(request, file_id):
     else:
         context['compilation_status'] = 'Compilation error'
         context['compiled_file'] = shell_result.stderr
-        context['compiled_sections'] = split_error(shell_result.stderr, file.name)
+        context['compiled_errors'] = split_error(shell_result.stderr, file.name)
 
     request.session['compiled_file'] = context['compiled_file']
 
