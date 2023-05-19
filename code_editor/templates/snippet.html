@@ -1,0 +1,34 @@
+{% if user.is_authenticated %}
+    {% if compiled_file and compilation_status != 'Compilation error' %}
+        <form action="{% url 'save_file' file_id %}" method="post" name="save_comp" style="flex-direction: column;">
+            {% csrf_token %}
+            <div class="row">
+                <input type="submit" value="Save file" class="std-button" name="save_comp" style="align-self: start; height: auto">
+                <div class="std-button" id="col-or-exp" onclick="col_or_exp()">Collapse all</div>
+            </div>
+            {% for section in compiled_sections %}
+                <div class="section">
+                    <pre class="sec-tit" onclick="sec({{ section.id }})">{{ section.title }}</pre>
+                    <div class="sec-con" id="con{{ section.id }}">
+                        {% for line in section.content %}
+                            {% if line.id is not None %}
+                                <pre class="sec-line" id="sec-line{{ line.id }}">{{ line.content }}</pre>
+                            {% else %}
+                                <pre>{{ line.content }}</pre>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+        </form>
+    {% elif compiled_file %}
+        <p>Compilation error</p><br>
+        {% for line in compiled_errors %}
+            {% if line.id is not None %}
+                <pre class="sec-line" id="sec-line{{ line.id }}">{{ line.content }}</pre>
+            {% else %}
+                <pre>{{ line.content }}</pre>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+{% endif %}

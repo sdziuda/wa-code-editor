@@ -15,11 +15,7 @@
                 <div class="navbar-item">
                     <button onclick="drop()" class="dropbtn">File</button>
                     <div id="myDropdown" class="dropdown-content">
-                        {% if file and file_id %}
-                            <a href="{% url 'compile_file' file_id %}">Compile</a>
-                        {% else %}
-                            <a href="{% url 'compile_no_file' %}">No file selected</a>
-                        {% endif %}
+                        <div id="compile-dropdown"></div>
                         <a href="{% url 'add_file_choose' %}">New File</a>
                         <a href="{% url 'add_dir_choose' %}">New Directory</a>
                         <a href="{% url 'delete_choose' %}">Delete...</a>
@@ -63,55 +59,12 @@
                         <p><a href="{% url 'login'%}">Login</a> to see your files</p>
                     {% endif %}
             </div>
-            <div class="main">
-                {% if user.is_authenticated %}
-                    {% for line in file %}
-                        {% if not line.content %}
-                            <pre class="line" id="line{{ line.ind }}"> </pre>
-                        {% else %}
-                            <pre class="line" id="line{{ line.ind }}">{{ line.content }}</pre>
-                        {% endif %}
-                    {% endfor %}
-                {% endif %}
-            </div>
-            <div class="snippet">
-                {% if user.is_authenticated %}
-                    {% if compiled_file and compilation_status != 'Compilation error' %}
-                        <form action="{% url 'save_file' file_id %}" method="post" name="save_comp" style="flex-direction: column;">
-                            {% csrf_token %}
-                            <div class="row">
-                                <input type="submit" value="Save file" class="std-button" name="save_comp" style="align-self: start; height: auto">
-                                <div class="std-button" id="col-or-exp" onclick="col_or_exp()">Collapse all</div>
-                            </div>
-                            {% for section in compiled_sections %}
-                                <div class="section">
-                                    <pre class="sec-tit" onclick="sec({{ section.id }})">{{ section.title }}</pre>
-                                    <div class="sec-con" id="con{{ section.id }}">
-                                        {% for line in section.content %}
-                                            {% if line.id is not None %}
-                                                <pre class="sec-line" id="sec-line{{ line.id }}">{{ line.content }}</pre>
-                                            {% else %}
-                                                <pre>{{ line.content }}</pre>
-                                            {% endif %}
-                                        {% endfor %}
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        </form>
-                    {% elif compiled_file %}
-                        <p>Compilation error</p><br>
-                        {% for line in compiled_sections %}
-                            {% if line.id is not None %}
-                                <pre class="sec-line" id="sec-line{{ line.id }}">{{ line.content }}</pre>
-                            {% else %}
-                                <pre>{{ line.content }}</pre>
-                            {% endif %}
-                        {% endfor %}
-                    {% endif %}
-                {% endif %}
-                <script src="{% static 'code_editor/highlight_controller.js' %}"></script>
-                <script src="{% static 'code_editor/section_dropdown_controller.js' %}"></script>
-            </div>
+            <script src="{% static 'code_editor/delete_controller.js' %}"></script>
+            <div class="main" id="main"></div>
+            <script src="{% static 'code_editor/fetch_controller.js' %}"></script>
+            <div class="snippet"></div>
+            <script src="{% static 'code_editor/compile_controller.js' %}"></script>
+            <script src="{% static 'code_editor/section_dropdown_controller.js' %}"></script>
             <div class="tab">
                 <div class="tabbar">
                     <div class="tabbar-item" onclick="change_tab(1)" id="bar1">
@@ -130,17 +83,16 @@
                 <div class="tab-content">
                     <div class="tab-area" id="tab1">
                     {% if user.is_authenticated %}
-                        <form action="" method="post" name="standard_opt">
+                        <form action="" method="post" name="standard_opt" onchange="sendStdForm()">
                             {% csrf_token %}
                             {{ std_form.as_p }}
-                            <input type="submit" value="Save" class="std-button" name="standard_opt">
                         </form>
                     {% endif %}
                     </div>
                     <div class="tab-area" id="tab2">
                     {% if user.is_authenticated %}
                         <p>Choose optimizations:</p>
-                        <form action="" method="post" name="optimization_opt" id="optimization_opt" style="padding: 0 10px; flex-direction: column;">
+                        <form action="" method="post" name="optimization_opt" id="optimization_opt" onchange="sendOptimForm()" style="padding: 0 10px; flex-direction: column;">
                             {% csrf_token %}
                             {% for opt in optim_form %}
                                 <div class="row">
@@ -151,18 +103,14 @@
                                     <label for="{{ opt.name }}" class="theme-label" style="margin: 0">{{ opt.label }}</label>
                                 </div>
                             {% endfor %}
-                            <div></div>
-                            <input type="submit" value="Save" class="std-button" name="optimization_opt" style="align-self: start;" onclick="save_optim()">
                         </form>
-                        <script src="{% static 'code_editor/optim_controller.js' %}"></script>
                     {% endif %}
                     </div>
                     <div class="tab-area" id="tab3">
                     {% if user.is_authenticated %}
-                        <form action="" method="post" name="processor_opt" id="processor_opt">
+                        <form action="" method="post" name="processor_opt" id="processor_opt" onchange="sendProcForm()">
                             {% csrf_token %}
                             {{ proc_form.as_p }}
-                            <input type="submit" value="Save" class="std-button" name="processor_opt" onclick="change_proc()">
                         </form>
                     {% endif %}
                     </div>
@@ -170,15 +118,14 @@
                     {% if user.is_authenticated %}
                         <div id="procmcs51">
                             <p>MCS51 options:</p>
-                            <form action="" method="post" name="mcs51_opt" id="mcs51_opt" style="padding: 10px 10px">
+                            <form action="" method="post" name="mcs51_opt" id="mcs51_opt" onchange="sendMCS51Form()" style="padding: 10px 10px">
                                 {% csrf_token %}
                                 {{ mcs51_form.as_p }}
-                                <input type="submit" value="Save" class="std-button" name="mcs51_opt">
                             </form>
                         </div>
                         <div id="procz80">
                             <p>Z80 options:</p>
-                            <form action="" method="post" name="z80_opt" id="z80_opt" style="padding: 0 10px; flex-direction: column;">
+                            <form action="" method="post" name="z80_opt" id="z80_opt" onchange="sendZ80Form()" style="padding: 0 10px; flex-direction: column;">
                                 {% csrf_token %}
                                 {% for opt in z80_form %}
                                     <div class="row">
@@ -189,25 +136,21 @@
                                         <label for="{{ opt.name }}" class="theme-label" style="margin: 0">{{ opt.label }}</label>
                                     </div>
                                 {% endfor %}
-                                <div></div>
-                                <input type="submit" value="Save" class="std-button" name="z80_opt" style="align-self: start;" onclick="save_z80()">
                             </form>
-                            <script src="{% static 'code_editor/z80_controller.js' %}"></script>
                         </div>
                         <div id="procstm8">
                             <p>STM8 options:</p>
-                            <form action="" method="post" name="stm8_opt" id="stm8_opt" style="padding: 10px 10px">
+                            <form action="" method="post" name="stm8_opt" id="stm8_opt" onchange="sendSTM8Form()" style="padding: 10px 10px">
                                 {% csrf_token %}
                                 {{ stm8_form.as_p }}
-                                <input type="submit" value="Save" class="std-button" name="stm8_opt">
                             </form>
                         </div>
                     {% endif %}
                     </div>
                     <script src="{% static 'code_editor/tab_controller.js' %}"></script>
-                    <script src="{% static 'code_editor/processor_controller.js' %}"></script>
                 </div>
             </div>
+            <script src="{% static 'code_editor/form_controller.js' %}"></script>
         </div>
         {% endblock %}
     </body>

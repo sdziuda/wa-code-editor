@@ -1,0 +1,9 @@
+{% if user.is_authenticated %}
+    {% for line in file %}
+        {% if not line.content %}
+            <pre class="line" id="line{{ line.ind }}"> </pre>
+        {% else %}
+            <pre class="line" id="line{{ line.ind }}">{{ line.content }}</pre>
+        {% endif %}
+    {% endfor %}
+{% endif %}

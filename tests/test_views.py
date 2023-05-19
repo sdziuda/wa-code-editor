@@ -3,6 +3,13 @@ from django.contrib.auth.models import User
 from code_editor.models import Directory, File
 
 
+def create_user_file_dir():
+    User.objects.create_user(username="test_user", password="test_password")
+    user = User.objects.get(username="test_user")
+    Directory.objects.create(name="test_dir", owner=user)
+    File.objects.create(name="test_file.c", owner=user, parent=Directory.objects.get(name="test_dir"))
+
+
 class IndexViewTest(TestCase):
     def setUp(self):
         User.objects.create_user(username="test_user", password="test_password")
@@ -34,7 +41,9 @@ class IndexViewTest(TestCase):
         self.client.login(username="test_user2", password="test_password2")
         response = self.client.get('/code_editor/' + str(File.objects.get(name="test_file").id) + '/')
         self.assertEqual(response.status_code, 200)
-        self.assertTrue(response.context.get('file') == 'You are not the owner of this file')
+        file = response.context.get('file')[0]
+        self.assertTrue(file is not None)
+        self.assertTrue(file['content'] == 'You are not the owner of this file')
 
 
 class CompileNoFileViewTest(TestCase):
@@ -70,10 +79,7 @@ class CompileFileViewTest(TestCase):
 
 class SaveFileViewTest(TestCase):
     def setUp(self):
-        User.objects.create_user(username="test_user", password="test_password")
-        user = User.objects.get(username="test_user")
-        Directory.objects.create(name="test_dir", owner=user)
-        File.objects.create(name="test_file.c", owner=user, parent=Directory.objects.get(name="test_dir"))
+        create_user_file_dir()
 
     def test_save_file(self):
         response = self.client.post('/code_editor/save/' + str(File.objects.get(name="test_file.c").id))
@@ -82,10 +88,7 @@ class SaveFileViewTest(TestCase):
 
 class DeleteViewTest(TestCase):
     def setUp(self):
-        User.objects.create_user(username="test_user", password="test_password")
-        user = User.objects.get(username="test_user")
-        Directory.objects.create(name="test_dir", owner=user)
-        File.objects.create(name="test_file.c", owner=user, parent=Directory.objects.get(name="test_dir"))
+        create_user_file_dir()
 
     def test_delete_file(self):
         self.client.login(username="test_user", password="test_password")
@@ -97,6 +100,23 @@ class DeleteViewTest(TestCase):
         self.client.login(username="test_user", password="test_password")
         response = self.client.post('/code_editor/delete_dir/' + str(Directory.objects.get(name="test_dir").id))
         self.assertEqual(response.status_code, 302)
+        self.assertFalse(Directory.objects.filter(name="test_dir")[0].available)
+
+
+class DeleteNoReloadViewTest(TestCase):
+    def setUp(self):
+        create_user_file_dir()
+
+    def test_delete_file(self):
+        self.client.login(username="test_user", password="test_password")
+        response = self.client.post('/code_editor/delete_file_no/' + str(File.objects.get(name="test_file.c").id))
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(File.objects.filter(name="test_file.c")[0].available)
+
+    def test_delete_dir(self):
+        self.client.login(username="test_user", password="test_password")
+        response = self.client.post('/code_editor/delete_dir_no/' + str(Directory.objects.get(name="test_dir").id))
+        self.assertEqual(response.status_code, 200)
         self.assertFalse(Directory.objects.filter(name="test_dir")[0].available)
 
 
