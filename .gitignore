@@ -4,3 +4,4 @@ code_editor/__pycache__/
 code_editor/migrations/__pycache__/
 wa_code_editor_django/__pycache__/
 tests/__pycache__/
+.coverage
