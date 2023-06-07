@@ -12,6 +12,10 @@ class AppUserTest(TestCase):
         test_user = AppUser.objects.get(nick="test_nick")
         self.assertEqual(test_user.user.username, "test_user")
 
+    def test_str(self):
+        test_user = AppUser.objects.get(nick="test_nick")
+        self.assertEqual(str(test_user), "test_nick")
+
 
 class DirectoryTest(TestCase):
     def setUp(self):
@@ -42,6 +46,10 @@ class DirectoryTest(TestCase):
             self.assertTrue(directory in [test_dir, test_dir_inside])
         for directory in Directory.objects.filter(owner=user2):
             self.assertTrue(directory in [test_dir2])
+
+    def test_str(self):
+        test_dir = Directory.objects.get(name="test_dir")
+        self.assertEqual(str(test_dir), "test_dir")
 
 
 class FileTest(TestCase):
@@ -81,6 +89,14 @@ class FileTest(TestCase):
         for file in File.objects.filter(owner=user2):
             self.assertTrue(file in [test_file3])
 
+    def test_str(self):
+        test_file = File.objects.get(name="test_file")
+        self.assertEqual(str(test_file), "test_file")
+
+    def test_absolute_url(self):
+        test_file = File.objects.get(name="test_file")
+        self.assertEqual(test_file.get_absolute_url(), "/code_editor/" + test_file.id.__str__() + "/")
+
 
 class SectionTest(TestCase):
     def setUp(self):
@@ -102,3 +118,7 @@ class SectionTest(TestCase):
         test_section2 = Section.objects.get(name="test_section2")
         for section in Section.objects.filter(parent=test_file):
             self.assertTrue(section in [test_section, test_section2])
+
+    def test_str(self):
+        test_section = Section.objects.get(name="test_section")
+        self.assertEqual(str(test_section), "test_section")

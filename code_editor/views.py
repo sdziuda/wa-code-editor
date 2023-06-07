@@ -1,8 +1,9 @@
-from django import forms
 from django.shortcuts import render
 from code_editor.models import Directory, File, Section, SectionType
 from django.template import loader
 from django.http import HttpResponseRedirect, HttpResponse
+from .forms import StandardForm, OptimizationForm, ProcessorForm, MCS51Form, Z80Form, STM8Form, DirForm, FileForm,\
+                   UploadFileForm
 import json
 import os
 import subprocess
@@ -85,17 +86,6 @@ def set_file(request, file_id, context):
             context['file'] = [{'ind': ind + 1, 'content': line} for ind, line in enumerate(file.content.splitlines())]
 
 
-class StandardForm(forms.Form):
-    std = forms.ChoiceField(choices=[('c89', 'C89'), ('c99', 'C99'), ('c11', 'C11')],
-                            label='Choose C standard')
-
-
-class OptimizationForm(forms.Form):
-    speed = forms.BooleanField(label='--opt-code-speed', required=False)
-    reverse = forms.BooleanField(label='--noloopreverse', required=False)
-    nolab = forms.BooleanField(label='--nolabelopt', required=False)
-
-
 def opt_to_val(speed, reverse, nolab):
     if speed and reverse and nolab:
         return 'speed+reverse+nolab'
@@ -134,21 +124,6 @@ def val_to_opt(opt):
         return False, False, False
 
 
-class ProcessorForm(forms.Form):
-    proc = forms.ChoiceField(choices=[('mcs51', 'MCS51'), ('z80', 'Z80'), ('stm8', 'STM8')],
-                             label='Choose processor')
-
-
-class MCS51Form(forms.Form):
-    mcs51 = forms.ChoiceField(choices=[('small', 'small'), ('medium', 'medium'), ('large', 'large'), ('huge', 'huge')],
-                              label='Choose model')
-
-
-class Z80Form(forms.Form):
-    callee = forms.BooleanField(label='--callee-saves-bc', required=False)
-    reserve = forms.BooleanField(label='--reserve-regs-iy', required=False)
-
-
 def z80_to_val(z80):
     if z80 == 'none':
         return False, False
@@ -169,11 +144,6 @@ def val_to_z80(callee, reserve):
         return 'reserve'
     else:
         return 'none'
-
-
-class STM8Form(forms.Form):
-    stm8 = forms.ChoiceField(choices=[('medium', 'medium'), ('large', 'large')],
-                             label='Choose model')
 
 
 def get_from_session(request):
@@ -216,6 +186,38 @@ def get_from_session(request):
     return std, optim, proc, mcs51, z80, stm8
 
 
+def set_to_session(request):
+    if b'standard_opt' in request.body:
+        data = json.loads(request.body.decode('utf-8'))
+        std = data['standard_opt']
+        request.session['standard'] = std
+    if b'optimization_opt' in request.body:
+        data = json.loads(request.body.decode('utf-8'))
+        speed = data['optimization_opt']['speed']
+        reverse = data['optimization_opt']['reverse']
+        nolab = data['optimization_opt']['nolab']
+        optim = opt_to_val(speed, reverse, nolab)
+        request.session['optimization'] = optim
+    if b'processor_opt' in request.body:
+        data = json.loads(request.body.decode('utf-8'))
+        proc = data['processor_opt']
+        request.session['processor'] = proc
+    if b'mcs51_opt' in request.body:
+        data = json.loads(request.body.decode('utf-8'))
+        mcs51 = data['mcs51_opt']
+        request.session['mcs51'] = mcs51
+    if b'z80_opt' in request.body:
+        data = json.loads(request.body.decode('utf-8'))
+        callee = data['z80_opt']['callee']
+        reserve = data['z80_opt']['reserve']
+        z80 = val_to_z80(callee, reserve)
+        request.session['z80'] = z80
+    if b'stm8_opt' in request.body:
+        data = json.loads(request.body.decode('utf-8'))
+        stm8 = data['stm8_opt']
+        request.session['stm8'] = stm8
+
+
 def index(request, file_id=None):
     if not request.user.is_authenticated:
         return render(request, 'index.html')
@@ -256,35 +258,7 @@ def index(request, file_id=None):
         return render(request, 'main.html', context)
 
     if request.method == 'POST':
-        if b'standard_opt' in request.body:
-            data = json.loads(request.body.decode('utf-8'))
-            std = data['standard_opt']
-            request.session['standard'] = std
-        if b'optimization_opt' in request.body:
-            data = json.loads(request.body.decode('utf-8'))
-            speed = data['optimization_opt']['speed']
-            reverse = data['optimization_opt']['reverse']
-            nolab = data['optimization_opt']['nolab']
-            optim = opt_to_val(speed, reverse, nolab)
-            request.session['optimization'] = optim
-        if b'processor_opt' in request.body:
-            data = json.loads(request.body.decode('utf-8'))
-            proc = data['processor_opt']
-            request.session['processor'] = proc
-        if b'mcs51_opt' in request.body:
-            data = json.loads(request.body.decode('utf-8'))
-            mcs51 = data['mcs51_opt']
-            request.session['mcs51'] = mcs51
-        if b'z80_opt' in request.body:
-            data = json.loads(request.body.decode('utf-8'))
-            callee = data['z80_opt']['callee']
-            reserve = data['z80_opt']['reserve']
-            z80 = val_to_z80(callee, reserve)
-            request.session['z80'] = z80
-        if b'stm8_opt' in request.body:
-            data = json.loads(request.body.decode('utf-8'))
-            stm8 = data['stm8_opt']
-            request.session['stm8'] = stm8
+        set_to_session(request)
 
     return render(request, 'index.html', context)
 
@@ -419,14 +393,9 @@ def compile_file(request, file_id):
 
     request.session['compiled_file'] = context['compiled_file']
 
-    if os.name == 'nt':
-        if os.path.isfile(file.name[:-2] + '.asm'):
-            os.system('del ' + file.name[:-2] + '.asm')
-        os.system('del ' + file.name)
-    else:
-        if os.path.isfile(file.name[:-2] + '.asm'):
-            os.system('rm ' + file.name[:-2] + '.asm')
-        os.system('rm ' + file.name)
+    if os.path.isfile(file.name[:-2] + '.asm'):
+        os.remove(file.name[:-2] + '.asm')
+    os.remove(file.name)
 
     return render(request, 'snippet.html', context)
 
@@ -437,8 +406,6 @@ def save_file(request, file_id):
 
     directories = Directory.objects.filter(owner=request.user, parent=None, available=True)
 
-    compiled_file = request.session['compiled_file']
-
     file = File.objects.get(id=file_id)
     name = file.name[:-2] + '.asm'
     if file.owner != request.user:
@@ -448,6 +415,7 @@ def save_file(request, file_id):
         }
         return render(request, 'index.html', context)
 
+    compiled_file = request.session['compiled_file']
     response = HttpResponse(compiled_file, content_type='text/plain')
     response['Content-Disposition'] = 'attachment; filename=' + name
 
@@ -533,11 +501,6 @@ def add_file_choose(request):
         'subfiles': add_file_files_tree_maker(directories)
     }
     return render(request, 'file_tree/choose.html', context)
-
-
-class DirForm(forms.Form):
-    name = forms.CharField(label="Name", max_length=200)
-    desc = forms.CharField(label="Description (optional)", max_length=600, required=False)
 
 
 def add_dir(request, dir_id):
@@ -697,16 +660,6 @@ def save_sections(file):
         new_sec = Section(parent=file, start=f[0], end=f[1], name=f'fun {f[0]}-{f[1]} {file.id}',
                           type=SectionType.PROCEDURE)
         new_sec.save()
-
-
-class UploadFileForm(forms.Form):
-    file = forms.FileField(label="Upload file")
-
-
-class FileForm(forms.Form):
-    name = forms.CharField(label="Name", max_length=200)
-    desc = forms.CharField(label="Description (optional)", max_length=600, required=False)
-    content = forms.CharField(label="Content", max_length=2000000, widget=forms.Textarea)
 
 
 def add_file(request, dir_id):

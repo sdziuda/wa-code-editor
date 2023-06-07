@@ -10,7 +10,7 @@
 </head>
 <body>
 
-    <div class="row"; style="padding-left: 10px; padding-right: 10px">
+    <div class="row" style="padding-left: 10px; padding-right: 10px">
         {% block sidebar %}
             <a href="{% url 'index' %}">Compiler</a>
 
@@ -26,6 +26,11 @@
     <div class="row" style="display: flex; justify-content: center">
         <div style="display: flex; flex-direction: column;">
             {% block content %}{% endblock %}
+        </div>
+    </div>
+    <div class="row" style="display: flex; justify-content: center">
+        <div style="display: flex; flex-direction: column;">
+            {% block error %}{% endblock %}
         </div>
     </div>
 </body>
