@@ -5,8 +5,11 @@
     <head>
         <title>Compiler</title>
         <link rel="stylesheet" href="{% static 'code_editor/style.css' %}">
+        <link rel="stylesheet" href="{% static 'code_editor/codemirror.css' %}">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta charset="UTF-8">
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.2/codemirror.min.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.2/mode/clike/clike.min.js"></script>
     </head>
     <body>
         {% block content %}
@@ -22,7 +25,10 @@
                     </div>
                 </div>
                 <div class="navbar-item">
-                    Edit
+                    <button onclick="dropEdit()" class="dropbtn">Edit</button>
+                    <div id="myDropdownEdit" class="dropdown-content">
+                        <a href="#">Save File</a>
+                    </div>
                 </div>
                 <div class="navbar-item">
                     <button onclick="dropOpt()" class="dropbtn">Options</button>

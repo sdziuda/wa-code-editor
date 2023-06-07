@@ -12,7 +12,7 @@
                     <div class="sec-con" id="con{{ section.id }}">
                         {% for line in section.content %}
                             {% if line.id is not None %}
-                                <pre class="sec-line" id="sec-line{{ line.id }}">{{ line.content }}</pre>
+                                <pre class="sec-line">{{ line.content }}</pre>
                             {% else %}
                                 <pre>{{ line.content }}</pre>
                             {% endif %}
@@ -25,7 +25,7 @@
         <p>Compilation error</p><br>
         {% for line in compiled_errors %}
             {% if line.id is not None %}
-                <pre class="sec-line" id="sec-line{{ line.id }}">{{ line.content }}</pre>
+                <pre class="sec-line">{{ line.content }}</pre>
             {% else %}
                 <pre>{{ line.content }}</pre>
             {% endif %}

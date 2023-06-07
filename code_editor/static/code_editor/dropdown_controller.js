@@ -2,6 +2,10 @@ function drop() {
   document.getElementById("myDropdown").classList.toggle("show");
 }
 
+function dropEdit() {
+  document.getElementById("myDropdownEdit").classList.toggle("show");
+}
+
 function dropOpt() {
   document.getElementById("myDropdownOptions").classList.toggle("show");
 }

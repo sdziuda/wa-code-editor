@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from code_editor.models import Directory, File, Section, SectionType
 from django.template import loader
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from .forms import StandardForm, OptimizationForm, ProcessorForm, MCS51Form, Z80Form, STM8Form, DirForm, FileForm,\
                    UploadFileForm
 import json
@@ -255,7 +255,10 @@ def index(request, file_id=None):
     if file_id is not None:
         context['file_id'] = file_id
         request.session['file_id'] = file_id
-        return render(request, 'main.html', context)
+        file = File.objects.get(id=file_id)
+        if file.owner != request.user:
+            return HttpResponseRedirect('/')
+        return JsonResponse({'file': file.content})
 
     if request.method == 'POST':
         set_to_session(request)

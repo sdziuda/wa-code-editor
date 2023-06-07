@@ -1,3 +1,12 @@
+function code_editor(content) {
+    CodeMirror(document.getElementById('main'), {
+        lineNumbers: true,
+        tabSize: 2,
+        value: content,
+        mode: "text/x-csrc",
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     const file_list = document.getElementsByClassName('file-link');
     const main = document.getElementById('main');
@@ -9,12 +18,13 @@ document.addEventListener('DOMContentLoaded', function () {
             localStorage.removeItem('file_id');
             localStorage.removeItem('compilation');
             localStorage.setItem('file_id', file);
+            main.innerHTML = '';
             fetchData(file).then(function (data) {
-                main.innerHTML = data;
+                code_editor(data.file)
                 document.getElementById('compile-dropdown').innerHTML = "<a onclick=\"compile(" + file + ")\">Compile</a>";
                 document.getElementsByClassName('snippet')[0].innerHTML = "";
 
-                localStorage.setItem('file', data);
+                localStorage.setItem('file', data.file);
             }).catch(function (error) {
                 console.error(error);
             });
@@ -24,11 +34,8 @@ document.addEventListener('DOMContentLoaded', function () {
     async function fetchData(file) {
         try {
             const response = await fetch("/code_editor/" + file + "/");
-            if (!response.ok) {
-                throw new Error('AJAX request failed: ${response.status}');
-            }
 
-            return await response.text();
+            return await response.json();
         } catch (error) {
             throw new Error('AJAX request failed: ${error}');
         }
@@ -36,13 +43,14 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 (function () {
+    document.getElementById('main').innerHTML = "";
     let file_data = localStorage.getItem('file');
     let file_id = localStorage.getItem('file_id');
     if (file_data) {
-        document.getElementById('main').innerHTML = file_data;
+        code_editor(file_data);
         document.getElementById('compile-dropdown').innerHTML = "<a onclick=\"compile(" + file_id + ")\">Compile</a>";
     } else {
-        document.getElementById('main').innerHTML = "";
+        code_editor("");
         document.getElementById('compile-dropdown').innerHTML = "<a href=\"/code_editor/compile/\">No file selected</a>";
     }
 })();
