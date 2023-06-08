@@ -1,6 +1,6 @@
 {% if user.is_authenticated %}
     {% if compiled_file and compilation_status != 'Compilation error' %}
-        <form action="{% url 'save_file' file_id %}" method="post" name="save_comp" style="flex-direction: column;">
+        <form action="{% url 'save_asm' file_id %}" method="post" name="save_comp" style="flex-direction: column;">
             {% csrf_token %}
             <div class="row">
                 <input type="submit" value="Save file" class="std-button" name="save_comp" style="align-self: start; height: auto">

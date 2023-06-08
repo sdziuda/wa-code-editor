@@ -27,8 +27,12 @@
                 <div class="navbar-item">
                     <button onclick="dropEdit()" class="dropbtn">Edit</button>
                     <div id="myDropdownEdit" class="dropdown-content">
-                        <a href="#">Save File</a>
+                        <form id="save" style="width: 100%; padding: 0; margin: 0;">
+                            {% csrf_token %}
+                            <div id="save-dropdown" style="width: 100%;"></div>
+                        </form>
                     </div>
+                    <script src="{% static 'code_editor/save_controller.js' %}"></script>
                 </div>
                 <div class="navbar-item">
                     <button onclick="dropOpt()" class="dropbtn">Options</button>
@@ -66,7 +70,7 @@
                     {% endif %}
             </div>
             <script src="{% static 'code_editor/delete_controller.js' %}"></script>
-            <div class="main" id="main"></div>
+            <textarea class="main" id="main"></textarea>
             <script src="{% static 'code_editor/fetch_controller.js' %}"></script>
             <div class="snippet"></div>
             <script src="{% static 'code_editor/compile_controller.js' %}"></script>

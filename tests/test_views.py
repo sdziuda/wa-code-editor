@@ -3,7 +3,7 @@ import os
 from django.test import TestCase
 from django.contrib.auth.models import User
 from code_editor.models import Directory, File
-from code_editor.views import set_file, opt_to_val, val_to_opt, z80_to_val, val_to_z80, set_to_session
+from code_editor.views import set_file, opt_to_val, val_to_opt, z80_to_val, val_to_z80, set_to_session, save_file
 
 
 def create_user_file_dir():
@@ -103,21 +103,45 @@ class CompileFileViewTest(TestCase):
         self.assertEqual(response.context.get('compilation_status'), "Compilation error")
 
 
-class SaveFileViewTest(TestCase):
+class SaveEditViewTest(TestCase):
     def setUp(self):
         create_user_file_dir()
         User.objects.create_user(username="test_user2", password="test_password2")
 
-    def test_save_file(self):
+    def test_save_edit(self):
+        self.client.login(username="test_user", password="test_password")
+        request = self.client.get('/code_editor/')
+        request.user = User.objects.get(username="test_user")
+        request.method = 'POST'
+        request.session = self.client.session
+        request.body = b'{"file_content":"int main() { return 0; }"}'
+        response = save_file(request, File.objects.get(name="test_file.c").id)
+        self.assertEqual(response.status_code, 200)
+
+    def test_save_edit_unauthorized(self):
+        response = self.client.post('/code_editor/save_file/' + str(File.objects.get(name="test_file.c").id))
+        self.assertEqual(response.status_code, 302)
+
+    def test_save_edit_wrong_user(self):
+        self.client.login(username="test_user2", password="test_password2")
+        response = self.client.post('/code_editor/save_file/' + str(File.objects.get(name="test_file.c").id))
+        self.assertEqual(response.status_code, 302)
+
+class SaveAsmViewTest(TestCase):
+    def setUp(self):
+        create_user_file_dir()
+        User.objects.create_user(username="test_user2", password="test_password2")
+
+    def test_save_asm(self):
         response = self.client.post('/code_editor/save/' + str(File.objects.get(name="test_file.c").id))
         self.assertEqual(response.status_code, 200)
         self.assertTrue(File.objects.filter(name="test_file.c")[0].available)
 
-    def test_save_file_unauthorized(self):
+    def test_save_asm_unauthorized(self):
         response = self.client.post('/code_editor/save/' + str(File.objects.get(name="test_file.c").id))
         self.assertEqual(response.status_code, 200)
 
-    def test_save_file_wrong_user(self):
+    def test_save_asm_wrong_user(self):
         self.client.login(username="test_user2", password="test_password2")
         response = self.client.post('/code_editor/save/' + str(File.objects.get(name="test_file.c").id))
         self.assertEqual(response.status_code, 200)

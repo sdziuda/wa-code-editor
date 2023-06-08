@@ -266,6 +266,18 @@ def index(request, file_id=None):
     return render(request, 'index.html', context)
 
 
+def save_file(request, file_id):
+    if not request.user.is_authenticated:
+        return HttpResponseRedirect('/')
+    file = File.objects.get(id=file_id)
+    if file.owner != request.user:
+        return HttpResponseRedirect('/')
+    body = json.loads(request.body.decode('utf-8'))
+    file.content = body['file_content']
+    file.save()
+    return JsonResponse({'file': file.content})
+
+
 def opt_to_cmd(opt):
     res = ''
     if 'speed' in opt:
@@ -403,7 +415,7 @@ def compile_file(request, file_id):
     return render(request, 'snippet.html', context)
 
 
-def save_file(request, file_id):
+def save_asm(request, file_id):
     if not request.user.is_authenticated:
         return render(request, 'index.html')
 
